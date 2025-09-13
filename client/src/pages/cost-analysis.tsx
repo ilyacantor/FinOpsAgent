@@ -9,6 +9,7 @@ import type { AwsResource } from "@shared/schema";
 interface DashboardMetrics {
   monthlySpend: number;
   identifiedSavings: number;
+  realizedSavings: number;
   resourcesAnalyzed: number;
   wastePercentage: number;
 }
@@ -159,6 +160,21 @@ export default function CostAnalysis() {
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Available optimizations
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Realized Savings</CardTitle>
+                  <TrendingUp className="h-4 w-4 text-accent" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-accent" data-testid="realized-savings">
+                    ${metrics?.realizedSavings?.toLocaleString() || 0}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    From approved optimizations
                   </p>
                 </CardContent>
               </Card>

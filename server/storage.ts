@@ -228,6 +228,7 @@ export class DatabaseStorage implements IStorage {
   async getDashboardMetrics(): Promise<{
     monthlySpend: number;
     identifiedSavings: number;
+    realizedSavings: number;
     resourcesAnalyzed: number;
     wastePercentage: number;
   }> {
@@ -251,6 +252,14 @@ export class DatabaseStorage implements IStorage {
       .from(recommendations)
       .where(eq(recommendations.status, 'pending'));
 
+    // Get total realized savings from approved recommendations
+    const [realizedSavingsResult] = await db
+      .select({
+        total: sql<number>`COALESCE(SUM(${recommendations.projectedAnnualSavings}), 0)::numeric`
+      })
+      .from(recommendations)
+      .where(eq(recommendations.status, 'approved'));
+
     // Get total resources analyzed
     const [resourcesResult] = await db
       .select({
@@ -261,11 +270,13 @@ export class DatabaseStorage implements IStorage {
     // Calculate waste percentage (simplified)
     const monthlySpend = Number(monthlySpendResult.total);
     const identifiedSavings = Number(savingsResult.total);
+    const realizedSavings = Number(realizedSavingsResult.total);
     const wastePercentage = monthlySpend > 0 ? (identifiedSavings / 12 / monthlySpend) * 100 : 0;
 
     return {
       monthlySpend,
       identifiedSavings,
+      realizedSavings,
       resourcesAnalyzed: Number(resourcesResult.count),
       wastePercentage: Math.round(wastePercentage)
     };
