@@ -152,12 +152,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/approval-requests/:id", async (req, res) => {
     try {
       const { status, approvedBy, comments } = req.body;
-      const updatedRequest = await storage.updateApprovalRequest(req.params.id, {
+      const updateData: any = {
         status,
         approvedBy,
         comments,
-        approvalDate: status === 'approved' ? new Date() : undefined
-      });
+      };
+      
+      if (status === 'approved') {
+        updateData.approvalDate = new Date();
+      }
+      
+      const updatedRequest = await storage.updateApprovalRequest(req.params.id, updateData);
 
       if (!updatedRequest) {
         return res.status(404).json({ error: "Approval request not found" });
@@ -192,6 +197,102 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating approval request:", error);
       res.status(400).json({ error: "Failed to update approval request" });
+    }
+  });
+
+  // Bulk approve all pending recommendations
+  app.post("/api/approve-all-recommendations", async (req, res) => {
+    try {
+      console.log("Starting bulk approval of all pending recommendations");
+      const { approvedBy = 'current-user', comments } = req.body;
+      
+      // Get all pending recommendations
+      const allRecommendations = await storage.getRecommendations();
+      const pendingRecommendations = allRecommendations.filter(r => r.status === 'pending');
+      
+      if (pendingRecommendations.length === 0) {
+        return res.json({ 
+          message: "No pending recommendations to approve",
+          approvedCount: 0,
+          recommendations: []
+        });
+      }
+
+      console.log(`Found ${pendingRecommendations.length} pending recommendations to approve`);
+      
+      const approvedRecommendations = [];
+      const errors = [];
+
+      // Process each pending recommendation
+      for (const recommendation of pendingRecommendations) {
+        try {
+          // Create approval request
+          const approvalRequest = await storage.createApprovalRequest({
+            recommendationId: recommendation.id,
+            requestedBy: approvedBy,
+            approverRole: 'Head of Cloud Platform',
+            status: 'approved',
+            approvedBy,
+            comments: comments || `Bulk approved with ${pendingRecommendations.length - 1} other recommendations`,
+            approvalDate: new Date()
+          } as any);
+
+          // Update recommendation status
+          await storage.updateRecommendationStatus(recommendation.id, 'approved');
+
+          // Create optimization history entry
+          await storage.createOptimizationHistory({
+            recommendationId: recommendation.id,
+            executedBy: approvedBy,
+            executionDate: new Date(),
+            beforeConfig: recommendation.currentConfig as any,
+            afterConfig: recommendation.recommendedConfig as any,
+            actualSavings: recommendation.projectedMonthlySavings,
+            status: 'approved'
+          });
+
+          approvedRecommendations.push({
+            id: recommendation.id,
+            title: recommendation.title,
+            projectedAnnualSavings: recommendation.projectedAnnualSavings
+          });
+
+          console.log(`Successfully approved recommendation: ${recommendation.title}`);
+        } catch (error) {
+          console.error(`Error approving recommendation ${recommendation.id}:`, error);
+          errors.push({
+            recommendationId: recommendation.id,
+            title: recommendation.title,
+            error: error instanceof Error ? error.message : String(error)
+          });
+        }
+      }
+
+      // Broadcast bulk approval to connected clients  
+      broadcast({
+        type: 'bulk_approval',
+        data: { 
+          approvedCount: approvedRecommendations.length,
+          totalAttempted: pendingRecommendations.length,
+          errors: errors.length
+        }
+      });
+
+      const totalSavings = approvedRecommendations.reduce((sum, rec) => sum + Number(rec.projectedAnnualSavings), 0);
+
+      res.json({
+        message: `Successfully approved ${approvedRecommendations.length} of ${pendingRecommendations.length} pending recommendations`,
+        approvedCount: approvedRecommendations.length,
+        totalAttempted: pendingRecommendations.length,
+        totalAnnualSavings: totalSavings,
+        recommendations: approvedRecommendations,
+        errors
+      });
+
+      console.log(`Bulk approval completed: ${approvedRecommendations.length}/${pendingRecommendations.length} successful`);
+    } catch (error) {
+      console.error("Error in bulk approval:", error);
+      res.status(500).json({ error: "Failed to approve recommendations" });
     }
   });
 

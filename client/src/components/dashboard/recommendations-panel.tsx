@@ -1,17 +1,47 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle, Info, CheckCircle, ExternalLink } from "lucide-react";
+import { AlertCircle, Info, CheckCircle, ExternalLink, CheckCheck } from "lucide-react";
 import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { Recommendation } from "@shared/schema";
 
 export function RecommendationsPanel() {
   const [selectedRecommendation, setSelectedRecommendation] = useState<string | null>(null);
+  const { toast } = useToast();
   
   const { data: recommendations, isLoading } = useQuery<Recommendation[]>({
     queryKey: ['/api/recommendations'],
     refetchInterval: 30000, // Refresh every 30 seconds
+  });
+
+  const approveAllMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest('POST', '/api/approve-all-recommendations', {
+        approvedBy: 'current-user',
+        comments: 'Bulk approval of all pending recommendations'
+      });
+    },
+    onSuccess: (data: any) => {
+      toast({
+        title: "Bulk Approval Successful",
+        description: `Successfully approved ${data.approvedCount} recommendations with total annual savings of $${data.totalAnnualSavings.toLocaleString()}`,
+      });
+      
+      // Force refresh all related data
+      queryClient.invalidateQueries({ queryKey: ['/api/recommendations'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/dashboard/metrics'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/optimization-history'] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Bulk Approval Failed",
+        description: error instanceof Error ? error.message : "Failed to approve recommendations",
+        variant: "destructive",
+      });
+    },
   });
 
   const handleApprovalRequest = (recommendationId: string) => {
@@ -56,8 +86,8 @@ export function RecommendationsPanel() {
   }
 
   const priorityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
-  const sortedRecommendations = [...recommendations]
-    .filter(r => r.status === 'pending')
+  const pendingRecommendations = recommendations?.filter(r => r.status === 'pending') || [];
+  const sortedRecommendations = [...pendingRecommendations]
     .sort((a, b) => priorityOrder[a.priority as keyof typeof priorityOrder] - priorityOrder[b.priority as keyof typeof priorityOrder])
     .slice(0, 3);
 
@@ -86,9 +116,33 @@ export function RecommendationsPanel() {
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-semibold text-foreground">Priority Recommendations</CardTitle>
-          <Button variant="ghost" size="sm" className="text-primary text-sm hover:underline">
-            View All
-          </Button>
+          <div className="flex items-center space-x-2">
+            {pendingRecommendations.length > 0 && (
+              <Button 
+                variant="default" 
+                size="sm" 
+                onClick={() => approveAllMutation.mutate()}
+                disabled={approveAllMutation.isPending}
+                className="bg-accent hover:bg-accent/90 text-accent-foreground"
+                data-testid="button-approve-all"
+              >
+                {approveAllMutation.isPending ? (
+                  <>
+                    <CheckCheck className="w-4 h-4 mr-1 animate-pulse" />
+                    Approving...
+                  </>
+                ) : (
+                  <>
+                    <CheckCheck className="w-4 h-4 mr-1" />
+                    Approve All ({pendingRecommendations.length})
+                  </>
+                )}
+              </Button>
+            )}
+            <Button variant="ghost" size="sm" className="text-primary text-sm hover:underline">
+              View All
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
