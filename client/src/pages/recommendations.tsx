@@ -1,6 +1,7 @@
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { RecommendationsPanel } from "@/components/dashboard/recommendations-panel";
+import { ApprovalModal } from "@/components/modals/approval-modal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
@@ -130,6 +131,8 @@ export default function Recommendations() {
           </div>
         </div>
       </main>
+      
+      <ApprovalModal />
     </div>
   );
 }

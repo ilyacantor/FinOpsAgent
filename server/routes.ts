@@ -102,7 +102,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/approval-requests", async (req, res) => {
     try {
       const validatedData = insertApprovalRequestSchema.parse(req.body);
-      const approvalRequest = await storage.createApprovalRequest(validatedData);
+      
+      // Create approval request with date handling
+      const approvalRequest = await storage.createApprovalRequest({
+        ...validatedData,
+        ...(req.body.approvalDate && { approvalDate: new Date(req.body.approvalDate) })
+      } as any);
       
       // Broadcast approval request to connected clients
       broadcast({
