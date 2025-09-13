@@ -1,7 +1,6 @@
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CostTrendsChart } from "@/components/dashboard/cost-trends-chart";
 import { ChartLine, DollarSign, TrendingDown, TrendingUp } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { AwsResource } from "@shared/schema";
@@ -180,9 +179,7 @@ export default function CostAnalysis() {
               </Card>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <CostTrendsChart />
-              
+            <div className="grid grid-cols-1 gap-6">
               <Card>
                 <CardHeader>
                   <CardTitle>Service Breakdown</CardTitle>
