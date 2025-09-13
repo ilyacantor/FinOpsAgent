@@ -47,7 +47,7 @@ export function ApprovalModal() {
         approvalDate: status === 'approved' ? new Date() : undefined
       });
     },
-    onSuccess: (_, variables) => {
+    onSuccess: async (_, variables) => {
       toast({
         title: variables.status === 'approved' ? "Optimization Approved" : "Optimization Rejected",
         description: variables.status === 'approved' 
@@ -55,8 +55,12 @@ export function ApprovalModal() {
           : "The optimization request has been rejected.",
       });
       
-      queryClient.invalidateQueries({ queryKey: ['/api/recommendations'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/approval-requests'] });
+      // Force refresh recommendation data and activity feed
+      await queryClient.invalidateQueries({ queryKey: ['/api/recommendations'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/approval-requests'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/optimization-history'] });
+      await queryClient.refetchQueries({ queryKey: ['/api/recommendations'] });
+      
       setIsOpen(false);
       setSelectedRecommendationId(null);
     },
@@ -91,7 +95,7 @@ export function ApprovalModal() {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="max-w-2xl" data-testid="approval-modal">
+      <DialogContent className="max-w-2xl" data-testid="approval-modal" aria-describedby="approval-description">
         <DialogHeader>
           <div className="flex items-center justify-between">
             <DialogTitle className="text-xl font-bold text-foreground">Approve Optimization</DialogTitle>
@@ -102,7 +106,7 @@ export function ApprovalModal() {
         </DialogHeader>
         
         <div className="space-y-6">
-          <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
+          <div id="approval-description" className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
             <div className="flex items-start space-x-3">
               <AlertTriangle className="text-destructive text-lg mt-1 flex-shrink-0" />
               <div>

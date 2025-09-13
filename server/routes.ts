@@ -101,13 +101,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Approval request endpoints
   app.post("/api/approval-requests", async (req, res) => {
     try {
+      console.log("Creating approval request with data:", req.body);
       const validatedData = insertApprovalRequestSchema.parse(req.body);
+      console.log("Validated data:", validatedData);
       
       // Create approval request with date handling
-      const approvalRequest = await storage.createApprovalRequest({
+      const approvalRequestData = {
         ...validatedData,
         ...(req.body.approvalDate && { approvalDate: new Date(req.body.approvalDate) })
-      } as any);
+      };
+      console.log("Final approval request data:", approvalRequestData);
+      
+      const approvalRequest = await storage.createApprovalRequest(approvalRequestData as any);
+      console.log("Created approval request:", approvalRequest);
+      
+      // If approved, update the recommendation status and create activity entry
+      if (req.body.status === 'approved') {
+        console.log("Updating recommendation status to approved for:", validatedData.recommendationId);
+        await storage.updateRecommendationStatus(validatedData.recommendationId, 'approved');
+        
+        // Get the recommendation details for the activity entry
+        const recommendation = await storage.getRecommendation(validatedData.recommendationId);
+        if (recommendation) {
+          console.log("Creating activity entry for approval");
+          await storage.createOptimizationHistory({
+            recommendationId: validatedData.recommendationId,
+            executedBy: validatedData.approvedBy || 'system',
+            executionDate: new Date(),
+            beforeConfig: recommendation.currentConfig as any,
+            afterConfig: recommendation.recommendedConfig as any,
+            actualSavings: recommendation.projectedMonthlySavings,
+            status: 'approved'
+          });
+        }
+      }
       
       // Broadcast approval request to connected clients
       broadcast({
@@ -118,7 +145,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(approvalRequest);
     } catch (error) {
       console.error("Error creating approval request:", error);
-      res.status(400).json({ error: "Failed to create approval request" });
+      res.status(500).json({ error: "Failed to create approval request" });
     }
   });
 

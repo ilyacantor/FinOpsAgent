@@ -193,7 +193,7 @@ export class DatabaseStorage implements IStorage {
       .limit(limit);
   }
 
-  async createApprovalRequest(request: InsertApprovalRequest): Promise<ApprovalRequest> {
+  async createApprovalRequest(request: InsertApprovalRequest & { approvalDate?: Date }): Promise<ApprovalRequest> {
     const [created] = await db
       .insert(approvalRequests)
       .values(request)

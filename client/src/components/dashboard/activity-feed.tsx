@@ -66,6 +66,12 @@ export function ActivityFeed() {
             ${actualSavings ? Number(actualSavings).toLocaleString() : 0}/mo saved
           </Badge>
         );
+      case 'approved':
+        return (
+          <Badge className="bg-blue-500 text-white" data-testid="status-approved">
+            APPROVED
+          </Badge>
+        );
       case 'in-progress':
         return <Badge variant="secondary">IN PROGRESS</Badge>;
       case 'failed':
@@ -79,6 +85,8 @@ export function ActivityFeed() {
     switch (status) {
       case 'success':
         return <Bot className="text-accent text-sm" />;
+      case 'approved':
+        return <TrendingUp className="text-blue-500 text-sm" />;
       case 'in-progress':
         return <Clock className="text-chart-3 text-sm" />;
       case 'failed':
@@ -92,6 +100,8 @@ export function ActivityFeed() {
     switch (status) {
       case 'success':
         return 'bg-accent/5';
+      case 'approved':
+        return 'bg-blue-50 dark:bg-blue-950/20';
       case 'in-progress':
         return 'bg-chart-3/5';
       case 'failed':
@@ -120,13 +130,14 @@ export function ActivityFeed() {
               data-testid={`activity-item-${index}`}
             >
               <Avatar className="w-8 h-8 flex-shrink-0 mt-1">
-                <AvatarFallback className={`${item.status === 'success' ? 'bg-accent' : item.status === 'failed' ? 'bg-destructive' : 'bg-chart-3'} text-white`}>
+                <AvatarFallback className={`${item.status === 'success' ? 'bg-accent' : item.status === 'approved' ? 'bg-blue-500' : item.status === 'failed' ? 'bg-destructive' : 'bg-chart-3'} text-white`}>
                   {getActivityIcon(item.status)}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground" data-testid={`activity-title-${index}`}>
                   {item.status === 'success' ? 'Optimization Completed' : 
+                   item.status === 'approved' ? 'Optimization Approved' :
                    item.status === 'failed' ? 'Optimization Failed' : 'Optimization In Progress'}
                 </p>
                 <p className="text-sm text-muted-foreground" data-testid={`activity-description-${index}`}>
