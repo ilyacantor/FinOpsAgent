@@ -204,6 +204,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AWS Data Simulation endpoints
+  app.post("/api/generate-aws-data", async (req, res) => {
+    try {
+      const { DataGenerator } = await import('./services/data-generator.js');
+      const generator = new DataGenerator(storage);
+      const result = await generator.generateAWSData();
+      res.json(result);
+    } catch (error) {
+      console.error("Error generating AWS data:", error);
+      res.status(500).json({ error: "Failed to generate AWS data" });
+    }
+  });
+
+  app.post("/api/clear-simulation-data", async (req, res) => {
+    try {
+      const { DataGenerator } = await import('./services/data-generator.js');
+      const generator = new DataGenerator(storage);
+      await generator.clearAllData();
+      res.json({ message: "Simulation data cleared" });
+    } catch (error) {
+      console.error("Error clearing simulation data:", error);
+      res.status(500).json({ error: "Failed to clear simulation data" });
+    }
+  });
+
   // Execute optimization function
   async function executeOptimization(recommendation: any) {
     try {

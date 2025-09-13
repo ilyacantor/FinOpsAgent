@@ -6,6 +6,7 @@ import { RecommendationsPanel } from "@/components/dashboard/recommendations-pan
 import { ActivityFeed } from "@/components/dashboard/activity-feed";
 import { ResourceMonitor } from "@/components/dashboard/resource-monitor";
 import { ApprovalModal } from "@/components/modals/approval-modal";
+import { DataGeneratorCard } from "@/components/simulation/data-generator-card";
 // Temporarily disable WebSocket due to React hook error
 // import { useWebSocket } from "@/hooks/use-websocket";
 // import { useEffect } from "react";
@@ -62,6 +63,10 @@ export default function Dashboard() {
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
             <ActivityFeed />
+            <DataGeneratorCard />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
             <ResourceMonitor />
           </div>
         </div>
