@@ -25,9 +25,12 @@ export function RecommendationsPanel() {
       });
     },
     onSuccess: (data: any) => {
+      const totalSavings = data.totalAnnualSavings || 0;
+      const formattedSavings = typeof totalSavings === 'number' ? totalSavings.toLocaleString() : '0';
+      
       toast({
         title: "Bulk Approval Successful",
-        description: `Successfully approved ${data.approvedCount} recommendations with total annual savings of $${data.totalAnnualSavings.toLocaleString()}`,
+        description: `Successfully approved ${data.approvedCount} recommendations with total annual savings of $${formattedSavings}`,
       });
       
       // Force refresh all related data
