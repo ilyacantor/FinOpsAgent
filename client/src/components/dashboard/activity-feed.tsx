@@ -136,7 +136,7 @@ export function ActivityFeed() {
                   <span className="text-xs text-muted-foreground" data-testid={`activity-time-${index}`}>
                     {formatDistanceToNow(new Date(item.createdAt), { addSuffix: true })}
                   </span>
-                  {getStatusBadge(item.status, item.actualSavings)}
+                  {getStatusBadge(item.status, item.actualSavings ?? undefined)}
                 </div>
               </div>
             </div>

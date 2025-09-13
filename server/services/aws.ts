@@ -208,7 +208,7 @@ export class AWSService {
             currentNodes: cluster.NumberOfNodes,
             recommendedNodes: cluster.NumberOfNodes,
             avgUtilization: avgCpuUtilization,
-            projectedSavings: this.calculateRedshiftSavings(currentNodeType, recommendedNodeType, cluster.NumberOfNodes || 1)
+            projectedSavings: this.calculateRedshiftSavings(currentNodeType || '', recommendedNodeType || '', cluster.NumberOfNodes || 1)
           };
         }
       }

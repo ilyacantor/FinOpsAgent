@@ -150,7 +150,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             
             broadcast({
               type: 'optimization_executed',
-              data: { recommendationId: recommendation.id, status: 'failed', error: error.message }
+              data: { recommendationId: recommendation.id, status: 'failed', error: error instanceof Error ? error.message : String(error) }
             });
           }
         }
@@ -248,7 +248,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         beforeConfig: recommendation.currentConfig,
         afterConfig: recommendation.recommendedConfig,
         status: 'failed',
-        errorMessage: error.message
+        errorMessage: error instanceof Error ? error.message : String(error)
       });
 
       await sendOptimizationComplete({

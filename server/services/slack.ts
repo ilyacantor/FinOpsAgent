@@ -1,18 +1,24 @@
 import { WebClient, type ChatPostMessageArguments } from "@slack/web-api";
 
-if (!process.env.SLACK_BOT_TOKEN) {
-  throw new Error("SLACK_BOT_TOKEN environment variable must be set");
+// Check if Slack is properly configured
+const isSlackEnabled = Boolean(process.env.SLACK_BOT_TOKEN && process.env.SLACK_CHANNEL_ID);
+const SLACK_CHANNEL_ID = process.env.SLACK_CHANNEL_ID || "C1234567890";
+
+// Log warning in development mode
+if (!isSlackEnabled) {
+  console.warn("⚠️ Running in development mode. Slack notifications will be disabled.");
 }
 
-if (!process.env.SLACK_CHANNEL_ID) {
-  throw new Error("SLACK_CHANNEL_ID environment variable must be set");
-}
-
-const slack = new WebClient(process.env.SLACK_BOT_TOKEN);
+const slack = isSlackEnabled ? new WebClient(process.env.SLACK_BOT_TOKEN!) : null;
 
 export async function sendSlackMessage(
   message: ChatPostMessageArguments
 ): Promise<string | undefined> {
+  if (!isSlackEnabled || !slack) {
+    console.log('Slack disabled - skipping message');
+    return undefined;
+  }
+  
   try {
     const response = await slack.chat.postMessage(message);
     return response.ts;
@@ -31,7 +37,7 @@ export async function sendOptimizationRecommendation(recommendation: {
   priority: string;
   recommendationId: string;
 }) {
-  const channel = process.env.SLACK_CHANNEL_ID!;
+  const channel = SLACK_CHANNEL_ID;
   
   const priorityEmoji = {
     critical: '🚨',
@@ -125,7 +131,7 @@ export async function sendOptimizationComplete(optimization: {
   actualSavings: number;
   status: string;
 }) {
-  const channel = process.env.SLACK_CHANNEL_ID!;
+  const channel = SLACK_CHANNEL_ID;
   
   const statusEmoji = optimization.status === 'success' ? '✅' : '❌';
   

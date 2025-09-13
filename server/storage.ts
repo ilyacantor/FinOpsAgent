@@ -105,18 +105,23 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getCostReports(dateFrom?: Date, dateTo?: Date): Promise<CostReport[]> {
-    let query = db.select().from(costReports);
-    
     if (dateFrom && dateTo) {
-      query = query.where(
-        and(
-          gte(costReports.reportDate, dateFrom),
-          lte(costReports.reportDate, dateTo)
+      return await db
+        .select()
+        .from(costReports)
+        .where(
+          and(
+            gte(costReports.reportDate, dateFrom),
+            lte(costReports.reportDate, dateTo)
+          )
         )
-      );
+        .orderBy(desc(costReports.reportDate));
     }
     
-    return await query.orderBy(desc(costReports.reportDate));
+    return await db
+      .select()
+      .from(costReports)
+      .orderBy(desc(costReports.reportDate));
   }
 
   async getMonthlyCostSummary(): Promise<{ month: string; totalCost: number; }[]> {
@@ -141,13 +146,18 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getRecommendations(status?: string): Promise<Recommendation[]> {
-    let query = db.select().from(recommendations);
-    
     if (status) {
-      query = query.where(eq(recommendations.status, status));
+      return await db
+        .select()
+        .from(recommendations)
+        .where(eq(recommendations.status, status))
+        .orderBy(desc(recommendations.createdAt));
     }
     
-    return await query.orderBy(desc(recommendations.createdAt));
+    return await db
+      .select()
+      .from(recommendations)
+      .orderBy(desc(recommendations.createdAt));
   }
 
   async getRecommendation(id: string): Promise<Recommendation | undefined> {
@@ -192,13 +202,18 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getApprovalRequests(status?: string): Promise<ApprovalRequest[]> {
-    let query = db.select().from(approvalRequests);
-    
     if (status) {
-      query = query.where(eq(approvalRequests.status, status));
+      return await db
+        .select()
+        .from(approvalRequests)
+        .where(eq(approvalRequests.status, status))
+        .orderBy(desc(approvalRequests.createdAt));
     }
     
-    return await query.orderBy(desc(approvalRequests.createdAt));
+    return await db
+      .select()
+      .from(approvalRequests)
+      .orderBy(desc(approvalRequests.createdAt));
   }
 
   async updateApprovalRequest(id: string, updates: Partial<InsertApprovalRequest>): Promise<ApprovalRequest | undefined> {

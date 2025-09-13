@@ -144,7 +144,7 @@ export class SchedulerService {
       const checks = await awsService.getTrustedAdvisorChecks();
       
       for (const check of checks) {
-        if (check.result.status === 'error' || check.result.status === 'warning') {
+        if (check.result && (check.result.status === 'error' || check.result.status === 'warning')) {
           console.log(`Trusted Advisor alert: ${check.name} - ${check.result.status}`);
           
           // Process flagged resources
