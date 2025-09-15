@@ -92,7 +92,7 @@ export function RecommendationsPanel() {
   const pendingRecommendations = recommendations?.filter(r => r.status === 'pending') || [];
   const sortedRecommendations = [...pendingRecommendations]
     .sort((a, b) => priorityOrder[a.priority as keyof typeof priorityOrder] - priorityOrder[b.priority as keyof typeof priorityOrder])
-    .slice(0, 3);
+    .slice(0, 6); // Show more recommendations with the full width available
 
   const getPriorityIcon = (priority: string) => {
     switch (priority) {
@@ -148,7 +148,7 @@ export function RecommendationsPanel() {
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {sortedRecommendations.map((recommendation, index) => {
           const isCritical = recommendation.priority === 'critical';
           
