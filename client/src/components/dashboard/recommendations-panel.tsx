@@ -60,12 +60,10 @@ export function RecommendationsPanel() {
         <CardHeader>
           <CardTitle>Priority Recommendations</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="animate-pulse bg-muted rounded-lg p-4 h-32"></div>
-            ))}
-          </div>
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="animate-pulse bg-muted rounded-lg p-4 h-32"></div>
+          ))}
         </CardContent>
       </Card>
     );
@@ -142,13 +140,13 @@ export function RecommendationsPanel() {
                 )}
               </Button>
             )}
-            <Button variant="ghost" size="sm" className="text-primary text-sm hover:underline">
+            <Button variant="ghost" size="sm" className="text-primary text-sm hover:underline" data-testid="button-view-all">
               View All
             </Button>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {sortedRecommendations.map((recommendation, index) => {
           const isCritical = recommendation.priority === 'critical';
           
