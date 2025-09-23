@@ -80,6 +80,16 @@ export const approvalRequests = pgTable("approval_requests", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const systemConfig = pgTable("system_config", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  key: text("key").notNull().unique(),
+  value: text("value").notNull(),
+  description: text("description"),
+  updatedBy: varchar("updated_by").notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Relations
 export const recommendationsRelations = relations(recommendations, ({ one }) => ({
   resource: one(awsResources, {
@@ -121,6 +131,7 @@ export const insertCostReportSchema = createInsertSchema(costReports).omit({ id:
 export const insertRecommendationSchema = createInsertSchema(recommendations).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertOptimizationHistorySchema = createInsertSchema(optimizationHistory).omit({ id: true, createdAt: true });
 export const insertApprovalRequestSchema = createInsertSchema(approvalRequests).omit({ id: true, createdAt: true, approvalDate: true });
+export const insertSystemConfigSchema = createInsertSchema(systemConfig).omit({ id: true, createdAt: true, updatedAt: true });
 
 // Types
 export type User = typeof users.$inferSelect;
@@ -135,3 +146,5 @@ export type OptimizationHistory = typeof optimizationHistory.$inferSelect;
 export type InsertOptimizationHistory = z.infer<typeof insertOptimizationHistorySchema>;
 export type ApprovalRequest = typeof approvalRequests.$inferSelect;
 export type InsertApprovalRequest = z.infer<typeof insertApprovalRequestSchema>;
+export type SystemConfig = typeof systemConfig.$inferSelect;
+export type InsertSystemConfig = z.infer<typeof insertSystemConfigSchema>;

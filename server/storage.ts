@@ -1,8 +1,9 @@
 import { 
-  users, awsResources, costReports, recommendations, optimizationHistory, approvalRequests,
+  users, awsResources, costReports, recommendations, optimizationHistory, approvalRequests, systemConfig,
   type User, type InsertUser, type AwsResource, type InsertAwsResource,
   type CostReport, type InsertCostReport, type Recommendation, type InsertRecommendation,
-  type OptimizationHistory, type InsertOptimizationHistory, type ApprovalRequest, type InsertApprovalRequest
+  type OptimizationHistory, type InsertOptimizationHistory, type ApprovalRequest, type InsertApprovalRequest,
+  type SystemConfig, type InsertSystemConfig
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lte, sql } from "drizzle-orm";
@@ -38,6 +39,12 @@ export interface IStorage {
   createApprovalRequest(request: InsertApprovalRequest): Promise<ApprovalRequest>;
   getApprovalRequests(status?: string): Promise<ApprovalRequest[]>;
   updateApprovalRequest(id: string, updates: Partial<InsertApprovalRequest>): Promise<ApprovalRequest | undefined>;
+
+  // System Configuration
+  getSystemConfig(key: string): Promise<SystemConfig | undefined>;
+  setSystemConfig(config: InsertSystemConfig): Promise<SystemConfig>;
+  updateSystemConfig(key: string, value: string, updatedBy: string): Promise<SystemConfig | undefined>;
+  getAllSystemConfig(): Promise<SystemConfig[]>;
 
   // Dashboard metrics
   getDashboardMetrics(): Promise<{
@@ -223,6 +230,48 @@ export class DatabaseStorage implements IStorage {
       .where(eq(approvalRequests.id, id))
       .returning();
     return updated || undefined;
+  }
+
+  async getSystemConfig(key: string): Promise<SystemConfig | undefined> {
+    const [config] = await db
+      .select()
+      .from(systemConfig)
+      .where(eq(systemConfig.key, key));
+    return config || undefined;
+  }
+
+  async setSystemConfig(config: InsertSystemConfig): Promise<SystemConfig> {
+    // Use upsert functionality - insert or update if key exists
+    const [result] = await db
+      .insert(systemConfig)
+      .values(config)
+      .onConflictDoUpdate({
+        target: systemConfig.key,
+        set: {
+          value: config.value,
+          description: config.description,
+          updatedBy: config.updatedBy,
+          updatedAt: new Date()
+        }
+      })
+      .returning();
+    return result;
+  }
+
+  async updateSystemConfig(key: string, value: string, updatedBy: string): Promise<SystemConfig | undefined> {
+    const [updated] = await db
+      .update(systemConfig)
+      .set({ value, updatedBy, updatedAt: new Date() })
+      .where(eq(systemConfig.key, key))
+      .returning();
+    return updated || undefined;
+  }
+
+  async getAllSystemConfig(): Promise<SystemConfig[]> {
+    return await db
+      .select()
+      .from(systemConfig)
+      .orderBy(systemConfig.key);
   }
 
   async getDashboardMetrics(): Promise<{
