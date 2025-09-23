@@ -92,6 +92,20 @@ export function Sidebar() {
               Governance
             </Link>
           </li>
+          <li>
+            <Link 
+              href="/agent-config" 
+              className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium ${
+                isActive('/agent-config') 
+                  ? 'bg-primary text-primary-foreground' 
+                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+              }`}
+              data-testid="nav-agent-config"
+            >
+              <Bot className="w-5 h-5 mr-3" />
+              Agent Config
+            </Link>
+          </li>
         </ul>
         
         <div className="mt-8">

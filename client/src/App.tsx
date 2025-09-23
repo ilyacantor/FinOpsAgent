@@ -8,6 +8,7 @@ import CostAnalysis from "@/pages/cost-analysis";
 import Recommendations from "@/pages/recommendations";
 import Automation from "@/pages/automation";
 import Governance from "@/pages/governance";
+import AgentConfig from "@/pages/agent-config";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -18,6 +19,7 @@ function Router() {
       <Route path="/recommendations" component={Recommendations}/>
       <Route path="/automation" component={Automation}/>
       <Route path="/governance" component={Governance}/>
+      <Route path="/agent-config" component={AgentConfig}/>
       <Route component={NotFound} />
     </Switch>
   );

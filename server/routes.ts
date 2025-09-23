@@ -5,6 +5,8 @@ import { storage } from "./storage";
 import { awsService } from "./services/aws";
 import { sendOptimizationComplete } from "./services/slack";
 import { insertRecommendationSchema, insertApprovalRequestSchema } from "@shared/schema";
+// Import scheduler service to ensure it's instantiated and configuration is initialized
+import { schedulerService } from "./services/scheduler.js";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
@@ -359,6 +361,115 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error clearing simulation data:", error);
       res.status(500).json({ error: "Failed to clear simulation data" });
+    }
+  });
+
+  // Basic auth check (simplified - in production use proper auth middleware)
+  const requireAuth = (req: any, res: any, next: any) => {
+    // TODO: Implement proper authentication/authorization
+    // For now, just log the access attempt
+    console.log('Configuration access attempt from:', req.ip);
+    next();
+  };
+
+  // System Configuration Routes
+  app.get("/api/system-config", requireAuth, async (req, res) => {
+    try {
+      const configs = await storage.getAllSystemConfig();
+      res.json(configs);
+    } catch (error) {
+      console.error("Error fetching system config:", error);
+      res.status(500).json({ error: "Failed to fetch system configuration" });
+    }
+  });
+
+  app.get("/api/system-config/:key", requireAuth, async (req, res) => {
+    try {
+      const config = await storage.getSystemConfig(req.params.key);
+      if (!config) {
+        return res.status(404).json({ error: "Configuration not found" });
+      }
+      res.json(config);
+    } catch (error) {
+      console.error("Error fetching system config:", error);
+      res.status(500).json({ error: "Failed to fetch system configuration" });
+    }
+  });
+
+  app.post("/api/system-config", requireAuth, async (req, res) => {
+    try {
+      const { insertSystemConfigSchema } = await import("@shared/schema");
+      const validatedData = insertSystemConfigSchema.parse(req.body);
+      const config = await storage.setSystemConfig(validatedData);
+      res.json(config);
+    } catch (error) {
+      console.error("Error setting system config:", error);
+      res.status(500).json({ error: "Failed to set system configuration" });
+    }
+  });
+
+  app.put("/api/system-config/:key", requireAuth, async (req, res) => {
+    try {
+      const { value, updatedBy } = req.body;
+      
+      // Basic validation for numeric values
+      if (req.params.key.includes('risk_level') || req.params.key.includes('savings')) {
+        const numValue = parseFloat(value);
+        if (isNaN(numValue) || numValue < 0) {
+          return res.status(400).json({ error: "Invalid numeric value" });
+        }
+      }
+      
+      const config = await storage.updateSystemConfig(req.params.key, value, updatedBy || 'system');
+      if (!config) {
+        return res.status(404).json({ error: "Configuration not found" });
+      }
+
+      // Invalidate configuration service cache when system config is updated
+      const { configService } = await import('./services/config.js');
+      configService.invalidateCache();
+      
+      res.json(config);
+    } catch (error) {
+      console.error("Error updating system config:", error);
+      res.status(500).json({ error: "Failed to update system configuration" });
+    }
+  });
+
+  // Agent Configuration Helper Routes
+  app.get("/api/agent-config", requireAuth, async (req, res) => {
+    try {
+      const { configService } = await import('./services/config.js');
+      const agentConfig = await configService.getAgentConfig();
+      res.json(agentConfig);
+    } catch (error) {
+      console.error("Error fetching agent config:", error);
+      res.status(500).json({ error: "Failed to fetch agent configuration" });
+    }
+  });
+
+  app.post("/api/agent-config/autonomous-mode", requireAuth, async (req, res) => {
+    try {
+      const { enabled, updatedBy } = req.body;
+      
+      if (typeof enabled !== 'boolean') {
+        return res.status(400).json({ error: "Enabled must be a boolean value" });
+      }
+      
+      const { configService } = await import('./services/config.js');
+      await configService.setAutonomousMode(enabled, updatedBy || 'system');
+      const agentConfig = await configService.getAgentConfig();
+      
+      // Broadcast configuration change to connected clients
+      broadcast({
+        type: 'agent_config_updated',
+        data: { autonomousMode: enabled, updatedBy }
+      });
+      
+      res.json(agentConfig);
+    } catch (error) {
+      console.error("Error updating autonomous mode:", error);
+      res.status(500).json({ error: "Failed to update autonomous mode" });
     }
   });
 

@@ -1,11 +1,22 @@
 import cron from 'node-cron';
 import { awsService } from './aws';
-import { sendOptimizationRecommendation } from './slack';
+import { sendOptimizationRecommendation, sendOptimizationComplete } from './slack';
 import { storage } from '../storage';
+import { configService } from './config';
 
 export class SchedulerService {
   constructor() {
     this.initializeScheduledTasks();
+    this.initializeConfiguration();
+  }
+
+  private async initializeConfiguration() {
+    try {
+      await configService.initializeDefaults();
+      console.log('✅ Agent configuration initialized');
+    } catch (error) {
+      console.error('❌ Failed to initialize agent configuration:', error);
+    }
   }
 
   private initializeScheduledTasks() {
@@ -65,16 +76,64 @@ export class SchedulerService {
               riskLevel: analysis.recommendation.avgUtilization < 25 ? '5' : '10'
             });
 
-            // Send Slack notification
-            await sendOptimizationRecommendation({
-              title: recommendation.title,
-              description: recommendation.description,
-              resourceId: recommendation.resourceId,
-              projectedMonthlySavings: Number(recommendation.projectedMonthlySavings),
-              projectedAnnualSavings: Number(recommendation.projectedAnnualSavings),
-              priority: recommendation.priority,
-              recommendationId: recommendation.id
+            // Check if we can execute autonomously
+            const canExecuteAutonomously = await configService.canExecuteAutonomously({
+              type: recommendation.type,
+              riskLevel: recommendation.riskLevel,
+              projectedAnnualSavings: recommendation.projectedAnnualSavings
             });
+
+            if (canExecuteAutonomously) {
+              // Execute immediately in autonomous mode
+              try {
+                await this.executeOptimization(recommendation);
+                await storage.updateRecommendationStatus(recommendation.id, 'executed');
+
+                // Send Slack notification about autonomous execution
+                await sendOptimizationComplete({
+                  title: `[AUTONOMOUS] ${recommendation.title}`,
+                  resourceId: recommendation.resourceId,
+                  actualSavings: Number(recommendation.projectedMonthlySavings),
+                  status: 'success'
+                });
+
+                console.log(`🤖 Autonomously executed recommendation: ${recommendation.title}`);
+              } catch (error) {
+                await storage.updateRecommendationStatus(recommendation.id, 'failed');
+                
+                // Create failed optimization history entry
+                await storage.createOptimizationHistory({
+                  recommendationId: recommendation.id,
+                  executedBy: 'autonomous-agent',
+                  executionDate: new Date(),
+                  beforeConfig: recommendation.currentConfig as any,
+                  afterConfig: recommendation.recommendedConfig as any,
+                  status: 'failed',
+                  errorMessage: error instanceof Error ? error.message : String(error)
+                });
+
+                // Send failure notification
+                await sendOptimizationComplete({
+                  title: `[AUTONOMOUS] ${recommendation.title}`,
+                  resourceId: recommendation.resourceId,
+                  actualSavings: 0,
+                  status: 'failed'
+                });
+
+                console.error(`❌ Autonomous execution failed for ${recommendation.id}:`, error);
+              }
+            } else {
+              // Send traditional notification requiring approval
+              await sendOptimizationRecommendation({
+                title: recommendation.title,
+                description: recommendation.description,
+                resourceId: recommendation.resourceId,
+                projectedMonthlySavings: Number(recommendation.projectedMonthlySavings),
+                projectedAnnualSavings: Number(recommendation.projectedAnnualSavings),
+                priority: recommendation.priority,
+                recommendationId: recommendation.id
+              });
+            }
           }
         }
 
@@ -159,6 +218,48 @@ export class SchedulerService {
       }
     } catch (error) {
       console.error('Error checking Trusted Advisor:', error);
+    }
+  }
+
+  private async executeOptimization(recommendation: any) {
+    try {
+      let result;
+      
+      if (recommendation.type === 'resize' && recommendation.resourceId.includes('redshift')) {
+        // Execute Redshift cluster resize
+        const config = recommendation.recommendedConfig;
+        result = await awsService.resizeRedshiftCluster(
+          recommendation.resourceId,
+          config.nodeType,
+          config.numberOfNodes
+        );
+        
+        // Record the optimization in history
+        await storage.createOptimizationHistory({
+          recommendationId: recommendation.id,
+          executedBy: 'autonomous-agent',
+          executionDate: new Date(),
+          beforeConfig: recommendation.currentConfig,
+          afterConfig: recommendation.recommendedConfig,
+          actualSavings: recommendation.projectedMonthlySavings,
+          status: 'success'
+        });
+      }
+      
+      return result;
+    } catch (error) {
+      // Record failed optimization
+      await storage.createOptimizationHistory({
+        recommendationId: recommendation.id,
+        executedBy: 'autonomous-agent',
+        executionDate: new Date(),
+        beforeConfig: recommendation.currentConfig,
+        afterConfig: recommendation.recommendedConfig,
+        status: 'failed',
+        errorMessage: error instanceof Error ? error.message : String(error)
+      });
+
+      throw error;
     }
   }
 }
