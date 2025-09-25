@@ -57,7 +57,7 @@ export class DataGenerator {
           networkIn: 1024.5,
           networkOut: 2048.1
         }),
-        monthlyCost: '245.76',
+        monthlyCost: 245760, // $245.76 * 1000
         tags: JSON.stringify({
           Environment: 'production',
           Team: 'backend',
@@ -80,7 +80,7 @@ export class DataGenerator {
           networkIn: 512.3,
           networkOut: 1024.7
         }),
-        monthlyCost: '67.32',
+        monthlyCost: 67320, // $67.32 * 1000
         tags: JSON.stringify({
           Environment: 'development',
           Team: 'frontend',
@@ -103,7 +103,7 @@ export class DataGenerator {
           networkIn: 256.1,
           networkOut: 512.3
         }),
-        monthlyCost: '501.12',
+        monthlyCost: 501120, // $501.12 * 1000
         tags: JSON.stringify({
           Environment: 'production',
           Team: 'data',
@@ -130,7 +130,7 @@ export class DataGenerator {
           readLatency: 0.002,
           writeLatency: 0.005
         }),
-        monthlyCost: '412.50',
+        monthlyCost: 412500, // $412.50 * 1000
         tags: JSON.stringify({
           Environment: 'production',
           Team: 'backend',
@@ -153,7 +153,7 @@ export class DataGenerator {
           readLatency: 0.001,
           writeLatency: 0.003
         }),
-        monthlyCost: '89.25',
+        monthlyCost: 89250, // $89.25 * 1000
         tags: JSON.stringify({
           Environment: 'development',
           Team: 'backend',
@@ -179,7 +179,7 @@ export class DataGenerator {
           putRequests: 5000,
           dataTransferOut: 100.5
         }),
-        monthlyCost: '57.38',
+        monthlyCost: 57380, // $57.38 * 1000
         tags: JSON.stringify({
           Environment: 'production',
           Team: 'devops',
@@ -201,7 +201,7 @@ export class DataGenerator {
           putRequests: 1000,
           dataTransferOut: 1500.2
         }),
-        monthlyCost: '23.67',
+        monthlyCost: 23670, // $23.67 * 1000
         tags: JSON.stringify({
           Environment: 'production',
           Team: 'frontend',
@@ -226,7 +226,7 @@ export class DataGenerator {
           targetResponseTime: 0.045,
           healthyTargets: 3
         }),
-        monthlyCost: '22.50',
+        monthlyCost: 22500, // $22.50 * 1000
         tags: JSON.stringify({
           Environment: 'production',
           Team: 'devops',
@@ -269,7 +269,7 @@ export class DataGenerator {
         await this.storage.createCostReport({
           reportDate,
           serviceCategory: service,
-          cost: cost.toFixed(2),
+          cost: Math.round(cost * 1000), // Multiply by 1000, no pennies
           usage: this.generateUsageForService(service),
           usageType: this.getUsageTypeForService(service),
           region: ['us-east-1', 'us-west-2', 'eu-west-1'][Math.floor(Math.random() * 3)]
@@ -351,8 +351,8 @@ export class DataGenerator {
           memory: '8 GiB',
           storage: 'EBS-optimized'
         }),
-        projectedMonthlySavings: '250.56',
-        projectedAnnualSavings: (250.56 * 12).toFixed(2),
+        projectedMonthlySavings: 250560, // $250.56 * 1000
+        projectedAnnualSavings: 250560 * 12, // $250.56 * 12 * 1000
         riskLevel: '15.5',
         status: 'pending'
       });
@@ -378,8 +378,8 @@ export class DataGenerator {
           objectCount: 125000,
           versioning: true
         }),
-        projectedMonthlySavings: '17.21',
-        projectedAnnualSavings: (17.21 * 12).toFixed(2),
+        projectedMonthlySavings: 17210, // $17.21 * 1000
+        projectedAnnualSavings: 17210 * 12, // $17.21 * 12 * 1000
         riskLevel: '5.0',
         status: 'pending'
       });
@@ -404,8 +404,8 @@ export class DataGenerator {
           pricingModel: 'reserved-1year',
           paymentOption: 'partial-upfront'
         }),
-        projectedMonthlySavings: '73.68',
-        projectedAnnualSavings: (73.68 * 12).toFixed(2),
+        projectedMonthlySavings: 73680, // $73.68 * 1000
+        projectedAnnualSavings: 73680 * 12, // $73.68 * 12 * 1000
         riskLevel: '2.5',
         status: 'pending'
       });
@@ -440,8 +440,8 @@ export class DataGenerator {
           autoShutdown: true,
           resources: devResources.length
         }),
-        projectedMonthlySavings: potentialSavings.toFixed(2),
-        projectedAnnualSavings: (potentialSavings * 12).toFixed(2),
+        projectedMonthlySavings: Math.round(potentialSavings * 1000), // Multiply by 1000, no pennies
+        projectedAnnualSavings: Math.round(potentialSavings * 12 * 1000), // Annual * 1000
         riskLevel: '8.0',
         status: 'pending'
       });
@@ -467,8 +467,8 @@ export class DataGenerator {
           allocatedStorage: 50,
           storageType: 'gp2'
         }),
-        projectedMonthlySavings: '63.18',
-        projectedAnnualSavings: (63.18 * 12).toFixed(2),
+        projectedMonthlySavings: 63180, // $63.18 * 1000
+        projectedAnnualSavings: 63180 * 12, // $63.18 * 12 * 1000
         riskLevel: '12.0',
         status: 'pending'
       });
@@ -501,7 +501,7 @@ export class DataGenerator {
           vcpus: 4,
           memory: '16 GiB'
         }),
-        actualSavings: '142.50',
+        actualSavings: 142500, // $142.50 * 1000
         status: 'success'
       },
       {
@@ -517,7 +517,7 @@ export class DataGenerator {
           storageClass: 'INTELLIGENT_TIERING',
           autoTiering: true
         }),
-        actualSavings: '89.32',
+        actualSavings: 89320, // $89.32 * 1000
         status: 'success'
       },
       {
@@ -533,7 +533,7 @@ export class DataGenerator {
           schedule: 'weekdays 8 AM - 8 PM',
           instances: 5
         }),
-        actualSavings: '425.68',
+        actualSavings: 425680, // $425.68 * 1000
         status: 'success'
       },
       {
