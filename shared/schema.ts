@@ -19,7 +19,7 @@ export const awsResources = pgTable("aws_resources", {
   region: text("region").notNull(),
   currentConfig: jsonb("current_config").notNull(),
   utilizationMetrics: jsonb("utilization_metrics"),
-  monthlyCost: decimal("monthly_cost", { precision: 10, scale: 2 }),
+  monthlyCost: integer("monthly_cost"), // Multiplied by 1000, no pennies
   lastAnalyzed: timestamp("last_analyzed").defaultNow().notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -29,7 +29,7 @@ export const costReports = pgTable("cost_reports", {
   reportDate: timestamp("report_date").notNull(),
   serviceCategory: text("service_category").notNull(),
   resourceId: text("resource_id"),
-  cost: decimal("cost", { precision: 12, scale: 2 }).notNull(),
+  cost: integer("cost").notNull(), // Multiplied by 1000, no pennies
   usage: decimal("usage", { precision: 12, scale: 6 }),
   usageType: text("usage_type"),
   region: text("region"),
@@ -45,8 +45,8 @@ export const recommendations = pgTable("recommendations", {
   description: text("description").notNull(),
   currentConfig: jsonb("current_config").notNull(),
   recommendedConfig: jsonb("recommended_config").notNull(),
-  projectedMonthlySavings: decimal("projected_monthly_savings", { precision: 10, scale: 2 }).notNull(),
-  projectedAnnualSavings: decimal("projected_annual_savings", { precision: 10, scale: 2 }).notNull(),
+  projectedMonthlySavings: integer("projected_monthly_savings").notNull(), // Multiplied by 1000, no pennies
+  projectedAnnualSavings: integer("projected_annual_savings").notNull(), // Multiplied by 1000, no pennies
   riskLevel: decimal("risk_level", { precision: 5, scale: 2 }).notNull(), // percentage
   status: text("status").notNull().default("pending"), // pending, approved, rejected, executed
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -60,7 +60,7 @@ export const optimizationHistory = pgTable("optimization_history", {
   executionDate: timestamp("execution_date").notNull(),
   beforeConfig: jsonb("before_config").notNull(),
   afterConfig: jsonb("after_config").notNull(),
-  actualSavings: decimal("actual_savings", { precision: 10, scale: 2 }),
+  actualSavings: integer("actual_savings"), // Multiplied by 1000, no pennies
   status: text("status").notNull(), // success, failed, in-progress
   errorMessage: text("error_message"),
   slackMessageId: text("slack_message_id"),
