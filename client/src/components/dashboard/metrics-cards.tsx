@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { DollarSign, PiggyBank, Database, PieChart, TrendingUp, TrendingDown, AlertTriangle } from "lucide-react";
+import { formatCurrency } from "@/lib/currency";
 
 interface DashboardMetrics {
   monthlySpend: number;
@@ -49,7 +50,7 @@ export function MetricsCards() {
             <div>
               <p className="text-sm font-medium text-muted-foreground">Monthly AWS Spend</p>
               <p className="text-3xl font-bold text-foreground mt-2" data-testid="monthly-spend-amount">
-                ${metrics.monthlySpend.toLocaleString()}
+                {formatCurrency(metrics.monthlySpend)}
               </p>
               <p className="text-sm text-destructive mt-1 flex items-center">
                 <TrendingUp className="w-4 h-4 mr-1" />
@@ -69,7 +70,7 @@ export function MetricsCards() {
             <div>
               <p className="text-sm font-medium text-muted-foreground">Identified Savings</p>
               <p className="text-3xl font-bold text-accent mt-2" data-testid="identified-savings-amount">
-                ${metrics.identifiedSavings.toLocaleString()}
+                {formatCurrency(metrics.identifiedSavings)}
               </p>
               <p className="text-sm text-accent mt-1 flex items-center">
                 <TrendingUp className="w-4 h-4 mr-1" />

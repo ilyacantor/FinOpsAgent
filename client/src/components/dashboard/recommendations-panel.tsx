@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AlertCircle, Info, CheckCircle, ExternalLink, CheckCheck } from "lucide-react";
+import { formatCurrencyWithSuffix, formatCurrency } from "@/lib/currency";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -26,11 +27,11 @@ export function RecommendationsPanel() {
     },
     onSuccess: (data: any) => {
       const totalSavings = data.totalAnnualSavings || 0;
-      const formattedSavings = typeof totalSavings === 'number' ? totalSavings.toLocaleString() : '0';
+      const formattedSavings = formatCurrency(totalSavings);
       
       toast({
         title: "Bulk Approval Successful",
-        description: `Successfully approved ${data.approvedCount} recommendations with total annual savings of $${formattedSavings}`,
+        description: `Successfully approved ${data.approvedCount} recommendations with total annual savings of ${formattedSavings}`,
       });
       
       // Force refresh all related data
@@ -167,7 +168,7 @@ export function RecommendationsPanel() {
                     </Badge>
                   </div>
                   <Badge variant="outline" data-testid={`savings-badge-${index}`}>
-                    ${Number(recommendation.projectedAnnualSavings).toLocaleString()}/year
+                    {formatCurrencyWithSuffix(recommendation.projectedAnnualSavings, '/year')}
                   </Badge>
                 </div>
                 
@@ -186,7 +187,7 @@ export function RecommendationsPanel() {
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Monthly Savings:</span>
                     <span className="font-bold text-accent" data-testid={`monthly-savings-${index}`}>
-                      ${Number(recommendation.projectedMonthlySavings).toLocaleString()}
+                      {formatCurrency(recommendation.projectedMonthlySavings)}
                     </span>
                   </div>
                   <div className="flex justify-between">

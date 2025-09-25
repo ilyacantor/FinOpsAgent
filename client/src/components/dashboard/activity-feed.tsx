@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Bot, Clock, TrendingUp } from "lucide-react";
+import { formatCurrencyWithSuffix } from "@/lib/currency";
 import { formatDistanceToNow } from "date-fns";
 import type { OptimizationHistory } from "@shared/schema";
 
@@ -58,12 +59,12 @@ export function ActivityFeed() {
     );
   }
 
-  const getStatusBadge = (status: string, actualSavings?: string) => {
+  const getStatusBadge = (status: string, actualSavings?: number) => {
     switch (status) {
       case 'success':
         return (
           <Badge className="bg-accent text-accent-foreground" data-testid="status-success">
-            ${actualSavings ? Number(actualSavings).toLocaleString() : 0}/mo saved
+            {actualSavings ? formatCurrencyWithSuffix(actualSavings, '/mo saved') : '$0/mo saved'}
           </Badge>
         );
       case 'approved':

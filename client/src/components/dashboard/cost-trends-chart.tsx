@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { formatCurrencyK, formatCurrency } from '@/lib/currency';
 import { useState } from "react";
 import { TrendingUp } from "lucide-react";
 
@@ -110,10 +111,10 @@ export function CostTrendsChart() {
                 axisLine={false}
                 tickLine={false}
                 className="text-sm"
-                tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
+                tickFormatter={(value) => formatCurrencyK(value)}
               />
               <Tooltip 
-                formatter={(value: number) => [`$${value.toLocaleString()}`, '']}
+                formatter={(value: number) => [formatCurrency(value), '']}
                 labelFormatter={(label) => `Month: ${label}`}
                 contentStyle={{
                   backgroundColor: 'hsl(var(--card))',
