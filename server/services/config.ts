@@ -37,7 +37,7 @@ export class ConfigService {
       },
       {
         key: 'agent.approval_required_above_savings',
-        value: '10000',
+        value: '10000000',
         description: 'Annual savings amount (USD) above which approval is required even in autonomous mode',
         updatedBy: 'system'
       },

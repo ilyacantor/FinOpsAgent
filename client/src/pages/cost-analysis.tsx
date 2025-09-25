@@ -2,6 +2,7 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartLine, DollarSign, TrendingDown, TrendingUp } from "lucide-react";
+import { formatCurrency } from "@/lib/currency";
 import { useQuery } from "@tanstack/react-query";
 import type { AwsResource } from "@shared/schema";
 
@@ -110,7 +111,7 @@ export default function CostAnalysis() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold" data-testid="monthly-spend">
-                    ${metrics?.monthlySpend.toLocaleString() || 0}
+                    {formatCurrency(metrics?.monthlySpend || 0)}
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Current month spending
@@ -140,7 +141,7 @@ export default function CostAnalysis() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold" data-testid="forecast">
-                    ${forecast.toLocaleString()}
+                    {formatCurrency(forecast)}
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Projected monthly
@@ -155,7 +156,7 @@ export default function CostAnalysis() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold" data-testid="potential-savings">
-                    ${metrics?.identifiedSavings.toLocaleString() || 0}
+                    {formatCurrency(metrics?.identifiedSavings || 0)}
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Available optimizations
@@ -170,7 +171,7 @@ export default function CostAnalysis() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-accent" data-testid="realized-savings">
-                    ${metrics?.realizedSavings?.toLocaleString() || 0}
+                    {formatCurrency(metrics?.realizedSavings || 0)}
                   </div>
                   <p className="text-xs text-muted-foreground">
                     From approved optimizations
@@ -194,7 +195,7 @@ export default function CostAnalysis() {
                             <span className="text-sm font-medium">{service}</span>
                           </div>
                           <div className="text-right">
-                            <div className="text-sm font-bold">${cost.toLocaleString()}/mo</div>
+                            <div className="text-sm font-bold">{formatCurrency(cost)}/mo</div>
                             <div className="text-xs text-muted-foreground">
                               {((cost / (metrics?.monthlySpend || 1)) * 100).toFixed(1)}%
                             </div>
