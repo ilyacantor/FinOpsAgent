@@ -12,7 +12,7 @@ export interface VectorMetadata {
 
 export class PineconeService {
   private pinecone: Pinecone;
-  private indexName: string = 'finops-rag';
+  private indexName: string = 'autonomos-finops-rag';
   private genAI: GoogleGenerativeAI;
   private embeddingModel: any;
   
