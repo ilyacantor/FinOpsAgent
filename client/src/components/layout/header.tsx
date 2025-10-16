@@ -1,4 +1,4 @@
-import { RotateCcw, Bot, Settings } from "lucide-react";
+import { RotateCcw, Bot, Settings, Activity } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 interface AgentConfig {
   autonomousMode: boolean;
   prodMode: boolean;
+  simulationMode: boolean;
   maxAutonomousRiskLevel: number;
   approvalRequiredAboveSavings: number;
   autoExecuteTypes: string[];
@@ -50,9 +51,42 @@ export function Header() {
     }
   });
 
+  // Mutation to update simulation mode
+  const updateSimulationMode = useMutation({
+    mutationFn: async (enabled: boolean) => {
+      const response = await fetch('/api/agent-config/simulation-mode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled, updatedBy: 'admin-user' })
+      });
+      if (!response.ok) throw new Error('Failed to update simulation mode');
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.setQueryData(['/api/agent-config'], data);
+      toast({
+        title: "Simulation Mode Updated",
+        description: `${data.simulationMode ? '📊 Dynamic Data ON (Synthetic Evolution)' : '📋 Static Data Mode'}`,
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Update Failed",
+        description: "Failed to update simulation mode.",
+        variant: "destructive",
+      });
+    }
+  });
+
   const handleToggleProdMode = () => {
     if (agentConfig) {
       updateProdMode.mutate(!agentConfig.prodMode);
+    }
+  };
+
+  const handleToggleSimulationMode = () => {
+    if (agentConfig) {
+      updateSimulationMode.mutate(!agentConfig.simulationMode);
     }
   };
 
@@ -93,6 +127,34 @@ export function Header() {
                 disabled={updateProdMode.isPending}
                 data-testid="header-prod-mode-toggle"
                 className="data-[state=checked]:bg-cyan-500"
+              />
+            </div>
+          )}
+
+          {/* Simulation Mode Toggle */}
+          {agentConfig && (
+            <div className="flex items-center gap-3 px-4 py-2 rounded-lg border border-purple-500/30 bg-gradient-to-r from-background to-purple-950/10">
+              <div className="flex items-center gap-2">
+                {agentConfig.simulationMode ? (
+                  <Activity className="w-4 h-4 text-purple-400" />
+                ) : (
+                  <Activity className="w-4 h-4 text-muted-foreground" />
+                )}
+                <span className="text-sm font-medium">Simulation</span>
+                <Badge 
+                  variant={agentConfig.simulationMode ? "default" : "secondary"} 
+                  className={agentConfig.simulationMode ? "bg-purple-500" : ""}
+                  data-testid="header-simulation-mode-badge"
+                >
+                  {agentConfig.simulationMode ? "ON" : "OFF"}
+                </Badge>
+              </div>
+              <Switch
+                checked={agentConfig.simulationMode}
+                onCheckedChange={handleToggleSimulationMode}
+                disabled={updateSimulationMode.isPending}
+                data-testid="header-simulation-mode-toggle"
+                className="data-[state=checked]:bg-purple-500"
               />
             </div>
           )}

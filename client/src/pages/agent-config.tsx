@@ -9,12 +9,14 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
-import { Bot, Shield, Settings, AlertTriangle } from "lucide-react";
+import { Bot, Shield, Settings, AlertTriangle, Activity } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
+import { Navbar } from "@/components/layout/navbar";
 
 interface AgentConfig {
   autonomousMode: boolean;
   prodMode: boolean;
+  simulationMode: boolean;
   maxAutonomousRiskLevel: number;
   approvalRequiredAboveSavings: number;
   autoExecuteTypes: string[];
@@ -125,9 +127,42 @@ export default function AgentConfig() {
     }
   };
 
+  // Mutation to update simulation mode
+  const updateSimulationMode = useMutation({
+    mutationFn: async (enabled: boolean) => {
+      const response = await fetch('/api/agent-config/simulation-mode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled, updatedBy: 'admin-user' })
+      });
+      if (!response.ok) throw new Error('Failed to update simulation mode');
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.setQueryData(['/api/agent-config'], data);
+      toast({
+        title: "Simulation Mode Updated",
+        description: `Simulation Mode ${data.simulationMode ? 'ON (Dynamic Data)' : 'OFF (Static Data)'} successfully.`,
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Update Failed",
+        description: "Failed to update simulation mode configuration.",
+        variant: "destructive",
+      });
+    }
+  });
+
   const handleToggleProdMode = async () => {
     if (localConfig) {
       await updateProdMode.mutateAsync(!localConfig.prodMode);
+    }
+  };
+
+  const handleToggleSimulationMode = async () => {
+    if (localConfig) {
+      await updateSimulationMode.mutateAsync(!localConfig.simulationMode);
     }
   };
 
@@ -141,17 +176,22 @@ export default function AgentConfig() {
 
   if (isLoading || !localConfig) {
     return (
-      <div className="p-6 space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Agent Configuration</h1>
-          <p className="text-muted-foreground">Loading configuration...</p>
+      <div className="min-h-screen flex flex-col bg-background">
+        <Navbar />
+        <div className="p-6 space-y-6">
+          <div>
+            <h1 className="text-3xl font-bold">Agent Configuration</h1>
+            <p className="text-muted-foreground">Loading configuration...</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="min-h-screen flex flex-col bg-background">
+      <Navbar />
+      <div className="p-6 space-y-6">
       <div>
         <h1 className="text-3xl font-bold flex items-center gap-2">
           <Bot className="h-8 w-8" />
@@ -213,6 +253,62 @@ export default function AgentConfig() {
               <AlertDescription>
                 <strong>Heuristics Mode Active.</strong> Using traditional rule-based analysis with fixed thresholds 
                 (CPU &lt;40% triggers resize recommendations).
+              </AlertDescription>
+            </Alert>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Simulation Mode Card */}
+      <Card className="border-purple-500/30 bg-gradient-to-br from-background to-purple-950/10">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Activity className="h-5 w-5 text-purple-400" />
+            Simulation Mode
+            <Badge variant={localConfig.simulationMode ? "default" : "secondary"} className={localConfig.simulationMode ? "bg-purple-500" : ""} data-testid="simulation-mode-badge">
+              {localConfig.simulationMode ? "ON" : "OFF"}
+            </Badge>
+          </CardTitle>
+          <CardDescription>
+            Toggle between dynamic synthetic data generation and static data mode
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <Label htmlFor="simulation-mode" className="text-base font-medium">
+                Simulation Mode
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                {localConfig.simulationMode 
+                  ? "📊 Dynamic data generation active (synthetic resource evolution over time)" 
+                  : "📋 Static data mode (fixed resource snapshots)"
+                }
+              </p>
+            </div>
+            <Switch
+              id="simulation-mode"
+              checked={localConfig.simulationMode}
+              onCheckedChange={handleToggleSimulationMode}
+              disabled={updateSimulationMode.isPending}
+              data-testid="simulation-mode-toggle"
+            />
+          </div>
+
+          {localConfig.simulationMode && (
+            <Alert className="border-purple-500/30 bg-purple-950/10">
+              <Activity className="h-4 w-4 text-purple-400" />
+              <AlertDescription>
+                <strong>Simulation Active.</strong> Generating synthetic data that evolves over time with realistic 
+                usage patterns, cost fluctuations, and resource lifecycle events.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {!localConfig.simulationMode && (
+            <Alert>
+              <AlertDescription>
+                <strong>Static Mode Active.</strong> Using fixed resource data without time-based evolution.
               </AlertDescription>
             </Alert>
           )}
@@ -366,6 +462,12 @@ export default function AgentConfig() {
               </p>
             </div>
             <div>
+              <p className="font-medium">Data Mode</p>
+              <p className="text-muted-foreground">
+                {localConfig.simulationMode ? "Dynamic (Simulation)" : "Static"}
+              </p>
+            </div>
+            <div>
               <p className="font-medium">Operation Mode</p>
               <p className="text-muted-foreground">
                 {localConfig.autonomousMode ? "Autonomous" : "Manual Approval Required"}
@@ -388,6 +490,7 @@ export default function AgentConfig() {
           </div>
         </CardContent>
       </Card>
+    </div>
     </div>
   );
 }

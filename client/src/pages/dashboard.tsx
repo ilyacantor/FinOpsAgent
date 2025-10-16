@@ -1,4 +1,5 @@
 import { Sidebar } from "@/components/layout/sidebar";
+import { Navbar } from "@/components/layout/navbar";
 import { Header } from "@/components/layout/header";
 import { MetricsCards } from "@/components/dashboard/metrics-cards";
 import { RecommendationsPanel } from "@/components/dashboard/recommendations-panel";
@@ -43,11 +44,14 @@ export default function Dashboard() {
   // }, [lastMessage, toast]);
 
   return (
-    <div className="min-h-screen flex bg-background">
-      <Sidebar />
+    <div className="min-h-screen flex flex-col bg-background">
+      <Navbar />
       
-      <main className="flex-1 overflow-hidden">
-        <Header />
+      <div className="flex-1 flex">
+        <Sidebar />
+        
+        <main className="flex-1 overflow-hidden">
+          <Header />
         
         <div className="p-6 h-full overflow-y-auto">
           <MetricsCards />
@@ -71,7 +75,8 @@ export default function Dashboard() {
             <ResourceMonitor />
           </div>
         </div>
-      </main>
+        </main>
+      </div>
       
       <ApprovalModal />
     </div>
