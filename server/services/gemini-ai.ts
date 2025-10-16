@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import type { AwsResource, Recommendation } from "@shared/schema";
+import { storage } from "../storage.js";
 
 export class GeminiAIService {
   private genAI: GoogleGenerativeAI;
@@ -17,7 +18,10 @@ export class GeminiAIService {
   }
 
   async analyzeResourcesForOptimization(resources: AwsResource[], historicalMetrics?: any): Promise<any[]> {
-    const prompt = this.buildAnalysisPrompt(resources, historicalMetrics);
+    // RAG: Retrieve historical context for better AI recommendations
+    const historicalContext = await this.retrieveHistoricalContext();
+    
+    const prompt = this.buildAnalysisPrompt(resources, historicalContext);
     
     try {
       const result = await this.model.generateContent(prompt);
@@ -32,7 +36,65 @@ export class GeminiAIService {
     }
   }
 
-  private buildAnalysisPrompt(resources: AwsResource[], historicalMetrics?: any): string {
+  // RAG: Retrieve historical context from past optimizations
+  private async retrieveHistoricalContext(): Promise<{
+    pastRecommendations: any[];
+    optimizationHistory: any[];
+    successPatterns: any;
+  }> {
+    try {
+      // Get recent recommendations
+      const pastRecommendations = await storage.getAllRecommendations();
+      
+      // Get optimization history with success/failure data
+      const optimizationHistory = await storage.getAllOptimizationHistory();
+      
+      // Calculate success patterns
+      const successPatterns = this.analyzeSuccessPatterns(optimizationHistory);
+      
+      return {
+        pastRecommendations: pastRecommendations.slice(-10), // Last 10 recommendations
+        optimizationHistory: optimizationHistory.slice(-10), // Last 10 executions
+        successPatterns
+      };
+    } catch (error) {
+      console.error("Error retrieving historical context for RAG:", error);
+      return {
+        pastRecommendations: [],
+        optimizationHistory: [],
+        successPatterns: {}
+      };
+    }
+  }
+
+  private analyzeSuccessPatterns(history: any[]): any {
+    const successfulOptimizations = history.filter(h => h.status === 'success');
+    const failedOptimizations = history.filter(h => h.status === 'failed');
+    
+    return {
+      totalOptimizations: history.length,
+      successCount: successfulOptimizations.length,
+      failureCount: failedOptimizations.length,
+      successRate: history.length > 0 ? (successfulOptimizations.length / history.length * 100).toFixed(1) : '0',
+      commonSuccessTypes: this.getCommonTypes(successfulOptimizations),
+      commonFailureTypes: this.getCommonTypes(failedOptimizations)
+    };
+  }
+
+  private getCommonTypes(optimizations: any[]): string[] {
+    const typeCounts: Record<string, number> = {};
+    optimizations.forEach(opt => {
+      const type = opt.beforeConfig?.type || 'unknown';
+      typeCounts[type] = (typeCounts[type] || 0) + 1;
+    });
+    
+    return Object.entries(typeCounts)
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 3)
+      .map(([type]) => type);
+  }
+
+  private buildAnalysisPrompt(resources: AwsResource[], historicalContext?: any): string {
     const resourceSummary = resources.map(r => ({
       id: r.resourceId,
       type: r.resourceType,
@@ -41,10 +103,39 @@ export class GeminiAIService {
       utilization: r.utilizationMetrics
     }));
 
+    // Include RAG context if available
+    const ragContext = historicalContext ? `
+
+HISTORICAL CONTEXT (RAG - Learn from Past Optimizations):
+${JSON.stringify({
+  successRate: historicalContext.successPatterns?.successRate + '%' || 'N/A',
+  totalOptimizations: historicalContext.successPatterns?.totalOptimizations || 0,
+  successfulTypes: historicalContext.successPatterns?.commonSuccessTypes || [],
+  failedTypes: historicalContext.successPatterns?.commonFailureTypes || [],
+  recentRecommendations: historicalContext.pastRecommendations?.map((r: any) => ({
+    type: r.type,
+    status: r.status,
+    savings: r.projectedMonthlySavings
+  })) || []
+}, null, 2)}
+
+LESSONS FROM HISTORY:
+- Past successful optimization types: ${historicalContext.successPatterns?.commonSuccessTypes?.join(', ') || 'None yet'}
+- Past failed optimization types: ${historicalContext.successPatterns?.commonFailureTypes?.join(', ') || 'None yet'}
+- Overall success rate: ${historicalContext.successPatterns?.successRate || '0'}%
+
+Use this historical data to:
+1. Favor optimization types that have succeeded before
+2. Be cautious with types that have failed previously
+3. Learn from past savings patterns
+4. Avoid repeating past mistakes
+` : '';
+
     return `You are an expert AWS FinOps consultant analyzing cloud infrastructure for cost optimization opportunities.
 
 RESOURCES TO ANALYZE:
 ${JSON.stringify(resourceSummary, null, 2)}
+${ragContext}
 
 TASK:
 Analyze these AWS resources and identify cost optimization opportunities. For each recommendation:
@@ -53,6 +144,7 @@ Analyze these AWS resources and identify cost optimization opportunities. For ea
 3. Provide contextual reasoning for why this optimization makes sense
 4. Consider resource relationships and dependencies
 5. Calculate realistic savings projections
+6. LEARN from historical optimization patterns above (RAG context)
 
 RESPONSE FORMAT (JSON array):
 [
@@ -78,6 +170,7 @@ IMPORTANT RULES:
 - Savings must be realistic based on AWS pricing
 - All monetary values should be integers (multiply by 1000, no decimal places)
 - Provide specific, actionable recommendations
+- Use historical success patterns to guide your recommendations
 
 Generate recommendations now:`;
   }
