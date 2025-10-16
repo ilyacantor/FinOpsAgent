@@ -7,6 +7,7 @@ import {
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lte, sql } from "drizzle-orm";
+import { pineconeService } from "./services/pinecone.js";
 
 export interface IStorage {
   // User operations
@@ -151,6 +152,12 @@ export class DatabaseStorage implements IStorage {
       .insert(recommendations)
       .values(recommendation)
       .returning();
+    
+    // Store in Pinecone for RAG (async, non-blocking)
+    pineconeService.storeRecommendation(created).catch(err => 
+      console.error('Failed to store recommendation in Pinecone:', err)
+    );
+    
     return created;
   }
 
@@ -191,6 +198,12 @@ export class DatabaseStorage implements IStorage {
       .insert(optimizationHistory)
       .values(history)
       .returning();
+    
+    // Store in Pinecone for RAG (async, non-blocking)
+    pineconeService.storeOptimizationHistory(created).catch(err => 
+      console.error('Failed to store optimization history in Pinecone:', err)
+    );
+    
     return created;
   }
 
