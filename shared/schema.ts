@@ -90,6 +90,20 @@ export const systemConfig = pgTable("system_config", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const historicalCostSnapshots = pgTable("historical_cost_snapshots", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  snapshotDate: timestamp("snapshot_date").notNull(),
+  totalMonthlyCost: integer("total_monthly_cost").notNull(),
+  computeCost: integer("compute_cost").notNull(),
+  storageCost: integer("storage_cost").notNull(),
+  databaseCost: integer("database_cost").notNull(),
+  networkCost: integer("network_cost").notNull(),
+  otherCost: integer("other_cost").notNull(),
+  resourceCount: integer("resource_count").notNull(),
+  avgUtilization: decimal("avg_utilization", { precision: 5, scale: 2 }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Relations
 export const recommendationsRelations = relations(recommendations, ({ one }) => ({
   resource: one(awsResources, {
@@ -132,6 +146,7 @@ export const insertRecommendationSchema = createInsertSchema(recommendations).om
 export const insertOptimizationHistorySchema = createInsertSchema(optimizationHistory).omit({ id: true, createdAt: true });
 export const insertApprovalRequestSchema = createInsertSchema(approvalRequests).omit({ id: true, createdAt: true, approvalDate: true });
 export const insertSystemConfigSchema = createInsertSchema(systemConfig).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertHistoricalCostSnapshotSchema = createInsertSchema(historicalCostSnapshots).omit({ id: true, createdAt: true });
 
 // Types
 export type User = typeof users.$inferSelect;
@@ -148,3 +163,5 @@ export type ApprovalRequest = typeof approvalRequests.$inferSelect;
 export type InsertApprovalRequest = z.infer<typeof insertApprovalRequestSchema>;
 export type SystemConfig = typeof systemConfig.$inferSelect;
 export type InsertSystemConfig = z.infer<typeof insertSystemConfigSchema>;
+export type HistoricalCostSnapshot = typeof historicalCostSnapshots.$inferSelect;
+export type InsertHistoricalCostSnapshot = z.infer<typeof insertHistoricalCostSnapshotSchema>;

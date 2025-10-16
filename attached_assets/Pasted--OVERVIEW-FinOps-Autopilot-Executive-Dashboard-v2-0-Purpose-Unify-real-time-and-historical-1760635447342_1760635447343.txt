@@ -1,0 +1,106 @@
+
+
+🧭 OVERVIEW: FinOps Autopilot Executive Dashboard v2.0
+Purpose:
+Unify real-time and historical visibility across spend, savings, utilization, automation, and agent intelligence.
+Data Sources: aws_resources, historical_cost_snapshots, finops_recommendations, finops_actions_log.
+________________________________________
+🔷 LAYOUT STRUCTURE
+1. Top Navigation Bar
+•	AutonomOS / FinOps Autopilot
+•	Environment toggle → Prod | Stage | Synthetic
+•	Timeframe selector → Month | Quarter | YTD | Annual
+•	Last sync (timestamp)
+•	Quick filters → Region / Service / Business Unit / Tag
+________________________________________
+2. Executive Summary (Financial Overview)
+Data: Derived from aws_resources + historical_cost_snapshots
+Metric	Definition	Visual	Data Source
+Monthly AWS Spend	Sum(monthlyCost)	Trend sparkline + delta vs. prior month	aws_resources
+YTD Spend	Sum(monthlyCost) YTD	Gauge chart	historical_cost_snapshots
+Annualized Spend (Projection)	(avg monthly × 12)	Line trend with seasonal projection	derived
+Identified Savings (Annual)	Sum(potentialSavings) × 12	Bar vs realized	finops_recommendations
+Realized Savings YTD	Sum(applied recommendations)	Progress bar	finops_actions_log
+ROI Tracker	RealizedSavings ÷ TotalSpend	Ratio card	derived
+Waste % (Inefficient Spend)	Derived from underutilized assets	Trend card	aws_resources.utilizationMetrics
+________________________________________
+3. AWS Spend Breakdown
+Goal: Decompose total cost by layer to explain what drives spend.
+Level	Example Components	Visuals
+Compute (EC2)	instanceType, region, usage hours	Donut chart of spend by instance type
+Storage (S3, EBS)	storageGB, access frequency	Column chart of cost vs GB stored
+Databases (RDS, Redshift)	engine, vCPU, memory	Heatmap: cost vs utilization
+Networking	Data transfer in/out	Line chart over time
+Monitoring / CloudWatch	Metrics + Logs	Small % tile
+Others (Lambda, etc.)	As available	Pie residual
+➡ Visual grouping:
+💻 Compute (40%) 🗄️ Storage (25%) 🧠 Database (20%) 🌐 Network (10%) 📊 Other (5%)
+Each segment clickable → expands to per-resource view:
+•	Instance ID
+•	Type
+•	Region
+•	Cost
+•	Utilization
+•	Recommendation link
+________________________________________
+4. Cost Trends & Comparisons
+Panel	Visual	Description
+Monthly Trend (Last 12 mo)	Line chart	Spend vs. Savings vs. Forecast
+Quarterly Comparison	Grouped bars	QTD vs. prior QTD
+YTD vs. Prior YTD	KPI pair	YTD$ / Δ%
+Anomaly Heatmap	Calendar view	Detect spend spikes
+Region Spend Map	Geo heatmap	Cost concentration by AWS region
+________________________________________
+5. Optimization & Agent Insights
+Subpanel	Visual	Data Source	Description
+Top Recommendations	Ranked table	finops_recommendations	Highest savings potential
+Adoption Rate	Progress bar	finops_actions_log	% implemented
+Auto-Optimization Actions	Timeline	finops_actions_log	e.g., “Terminated 5 idle EC2s”
+Recommendation Confidence	Scatterplot	finops_recommendations.confidence	Confidence vs savings
+Agent Learning Curve	Line chart	derived metrics	Shows decreasing false positives
+Optimization Coverage	Gauge	derived	% of total AWS assets monitored
+________________________________________
+6. Utilization & Efficiency Analytics
+Metric	Description	Visual
+Average CPU / Memory Utilization	Across EC2 + RDS	Dual-axis bar
+Underutilized Resources	Count + cost impact	Table
+Idle Resource Detector	% idle by service	Donut chart
+Efficiency Index	Weighted average utilization per $	KPI card
+Utilization Distribution	Histogram	e.g., 0–20%, 20–40%, etc.
+________________________________________
+7. Forecast & Simulation Panel
+Leverages projected costs and savings.
+Element	Example
+Adoption Slider: “If we apply 60% of recommendations…” → update projected annual savings	
+Forecast Line: Baseline vs Optimized Spend	
+Seasonality Overlay: Based on historical snapshots	
+Alerts: “Projected overage in 9 days” (based on spend velocity)	
+________________________________________
+8. Governance & Audit Section
+Metric	Description	Source
+Policy Violations	e.g., untagged resources, non-compliant instance types	derived
+Cost Threshold Alerts	Spend above limit	rules engine
+Agent Activity Log	Timestamp, Action, Outcome	finops_actions_log
+Approval Queue	Pending manual reviews	finops_recommendations.status
+Compliance Trend	% resources under policy	derived
+________________________________________
+9. Cross-Agent Intelligence (Optional Future Integration)
+Visual graph (node diagram):
+FinOps ↔ RevOps ↔ SecOps ↔ DCL
+Shows which domains share data or actions — e.g.,
+“RevOps Agent paused marketing analytics cluster during off-hours → FinOps confirms 12% spend reduction.”
+________________________________________
+10. Visual System Design
+•	Theme: dark UI (charcoal #1B1E23), cyan accents (#0BCAD9)
+•	KPI Cards: large numerics with period deltas
+•	Charts: D3.js / Recharts / ECharts for interactivity
+•	Layout Framework: React + Tailwind grid (3-column responsive)
+•	Navigation Tabs: Dashboard · Analysis · Optimization · Governance
+________________________________________
+🗂️ Data Architecture Mapping (high-level)
+Data Source	Key Fields Used	Dashboard Sections
+aws_resources	resourceType, region, utilizationMetrics, monthlyCost	Spend Breakdown, Utilization
+historical_cost_snapshots	month, monthlyCost	Trends, Comparisons
+finops_recommendations	recommendationType, potentialSavings, confidence, status	Optimization Insights
+finops_actions_log	actionType, executedAt, result	Automation, Governance
+________________________________________
