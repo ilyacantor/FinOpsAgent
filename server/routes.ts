@@ -473,6 +473,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/agent-config/prod-mode", requireAuth, async (req, res) => {
+    try {
+      const { enabled, updatedBy } = req.body;
+      
+      if (typeof enabled !== 'boolean') {
+        return res.status(400).json({ error: "Enabled must be a boolean value" });
+      }
+      
+      const { configService } = await import('./services/config.js');
+      await configService.setProdMode(enabled, updatedBy || 'system');
+      const agentConfig = await configService.getAgentConfig();
+      
+      // Broadcast configuration change to connected clients
+      broadcast({
+        type: 'agent_config_updated',
+        data: { prodMode: enabled, updatedBy }
+      });
+      
+      res.json(agentConfig);
+    } catch (error) {
+      console.error("Error updating prod mode:", error);
+      res.status(500).json({ error: "Failed to update prod mode" });
+    }
+  });
+
   // Manual AI analysis trigger endpoint
   app.post("/api/ai/analyze", async (req, res) => {
     try {

@@ -14,6 +14,7 @@ import { formatCurrency } from "@/lib/currency";
 
 interface AgentConfig {
   autonomousMode: boolean;
+  prodMode: boolean;
   maxAutonomousRiskLevel: number;
   approvalRequiredAboveSavings: number;
   autoExecuteTypes: string[];
@@ -64,6 +65,33 @@ export default function AgentConfig() {
     }
   });
 
+  // Mutation to update prod mode
+  const updateProdMode = useMutation({
+    mutationFn: async (enabled: boolean) => {
+      const response = await fetch('/api/agent-config/prod-mode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled, updatedBy: 'admin-user' })
+      });
+      if (!response.ok) throw new Error('Failed to update prod mode');
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.setQueryData(['/api/agent-config'], data);
+      toast({
+        title: "Prod Mode Updated",
+        description: `Prod Mode ${data.prodMode ? 'ON (AI with RAG)' : 'OFF (Heuristics)'} successfully.`,
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Update Failed",
+        description: "Failed to update prod mode configuration.",
+        variant: "destructive",
+      });
+    }
+  });
+
   // Mutation to update risk level
   const updateRiskLevel = useMutation({
     mutationFn: async (riskLevel: number) => {
@@ -97,6 +125,12 @@ export default function AgentConfig() {
     }
   };
 
+  const handleToggleProdMode = async () => {
+    if (localConfig) {
+      await updateProdMode.mutateAsync(!localConfig.prodMode);
+    }
+  };
+
   const handleRiskLevelChange = async (value: string) => {
     const riskLevel = parseFloat(value);
     if (!isNaN(riskLevel) && riskLevel >= 0 && riskLevel <= 100) {
@@ -127,6 +161,63 @@ export default function AgentConfig() {
           Configure autonomous AI agent behavior and safety controls
         </p>
       </div>
+
+      {/* Prod Mode Card */}
+      <Card className="border-cyan-500/30 bg-gradient-to-br from-background to-cyan-950/10">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Settings className="h-5 w-5 text-cyan-400" />
+            Production Mode
+            <Badge variant={localConfig.prodMode ? "default" : "secondary"} className={localConfig.prodMode ? "bg-cyan-500" : ""} data-testid="prod-mode-badge">
+              {localConfig.prodMode ? "AI + RAG" : "HEURISTICS"}
+            </Badge>
+          </CardTitle>
+          <CardDescription>
+            Toggle between AI-powered analysis with RAG and traditional heuristics-based analysis
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <Label htmlFor="prod-mode" className="text-base font-medium">
+                Production Mode
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                {localConfig.prodMode 
+                  ? "🚀 AI-powered analysis with Gemini 2.5 Flash + RAG (learns from historical optimizations)" 
+                  : "⚙️ Traditional heuristics-based analysis (rule-based thresholds)"
+                }
+              </p>
+            </div>
+            <Switch
+              id="prod-mode"
+              checked={localConfig.prodMode}
+              onCheckedChange={handleToggleProdMode}
+              disabled={updateProdMode.isPending}
+              data-testid="prod-mode-toggle"
+            />
+          </div>
+
+          {localConfig.prodMode && (
+            <Alert className="border-cyan-500/30 bg-cyan-950/10">
+              <Bot className="h-4 w-4 text-cyan-400" />
+              <AlertDescription>
+                <strong>AI Mode Active.</strong> Using Gemini 2.5 Flash with Retrieval Augmented Generation (RAG) 
+                to analyze resources based on historical optimization patterns and intelligent context analysis.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {!localConfig.prodMode && (
+            <Alert>
+              <AlertDescription>
+                <strong>Heuristics Mode Active.</strong> Using traditional rule-based analysis with fixed thresholds 
+                (CPU &lt;40% triggers resize recommendations).
+              </AlertDescription>
+            </Alert>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Autonomous Mode Card */}
       <Card>
@@ -268,6 +359,12 @@ export default function AgentConfig() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <p className="font-medium">Analysis Mode</p>
+              <p className="text-muted-foreground">
+                {localConfig.prodMode ? "AI + RAG (Gemini 2.5 Flash)" : "Heuristics (Rule-based)"}
+              </p>
+            </div>
             <div>
               <p className="font-medium">Operation Mode</p>
               <p className="text-muted-foreground">
