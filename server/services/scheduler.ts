@@ -4,11 +4,13 @@ import { sendOptimizationRecommendation, sendOptimizationComplete } from './slac
 import { storage } from '../storage';
 import { configService } from './config';
 import { geminiAI } from './gemini-ai';
+import { syntheticDataGenerator } from './synthetic-data';
 
 export class SchedulerService {
   constructor() {
     this.initializeScheduledTasks();
     this.initializeConfiguration();
+    this.initializeSyntheticData();
   }
 
   private async initializeConfiguration() {
@@ -17,6 +19,18 @@ export class SchedulerService {
       console.log('✅ Agent configuration initialized');
     } catch (error) {
       console.error('❌ Failed to initialize agent configuration:', error);
+    }
+  }
+
+  private async initializeSyntheticData() {
+    try {
+      const config = await configService.getAgentConfig();
+      if (config.simulationMode) {
+        console.log('📊 Simulation Mode is ON - initializing synthetic dataset...');
+        await syntheticDataGenerator.generateInitialDataset();
+      }
+    } catch (error) {
+      console.error('❌ Failed to initialize synthetic data:', error);
     }
   }
 
@@ -36,6 +50,33 @@ export class SchedulerService {
     cron.schedule('0 3 * * 0', async () => {
       console.log('Running weekly Trusted Advisor check...');
       await this.checkTrustedAdvisor();
+    });
+
+    // Evolve synthetic data every 15 minutes when simulation mode is ON
+    cron.schedule('*/15 * * * *', async () => {
+      const config = await configService.getAgentConfig();
+      if (config.simulationMode) {
+        console.log('📊 [SIMULATION MODE] Evolving synthetic resource data...');
+        await syntheticDataGenerator.evolveResources();
+      }
+    });
+
+    // Add new synthetic resources occasionally (every 2 hours) when simulation mode is ON
+    cron.schedule('0 */2 * * *', async () => {
+      const config = await configService.getAgentConfig();
+      if (config.simulationMode && Math.random() > 0.5) { // 50% chance
+        console.log('📊 [SIMULATION MODE] Adding new synthetic resource...');
+        await syntheticDataGenerator.addNewResource();
+      }
+    });
+
+    // Mark terminated resources daily when simulation mode is ON
+    cron.schedule('0 4 * * *', async () => {
+      const config = await configService.getAgentConfig();
+      if (config.simulationMode) {
+        console.log('📊 [SIMULATION MODE] Checking for resources to terminate...');
+        await syntheticDataGenerator.markTerminatedResources();
+      }
     });
   }
 
