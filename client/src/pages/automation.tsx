@@ -1,4 +1,5 @@
 import { Sidebar } from "@/components/layout/sidebar";
+import { Navbar } from "@/components/layout/navbar";
 import { Header } from "@/components/layout/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -47,11 +48,14 @@ export default function Automation() {
   ];
 
   return (
-    <div className="min-h-screen flex bg-background">
-      <Sidebar />
+    <div className="min-h-screen flex flex-col bg-background">
+      <Navbar />
       
-      <main className="flex-1 overflow-hidden">
-        <Header />
+      <div className="flex-1 flex">
+        <Sidebar />
+        
+        <main className="flex-1 overflow-hidden">
+          <Header />
         
         <div className="p-6 h-full overflow-y-auto">
       <div className="space-y-6">
@@ -178,6 +182,7 @@ export default function Automation() {
           </div>
         </div>
       </main>
+      </div>
     </div>
   );
 }
