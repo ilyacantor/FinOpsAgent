@@ -1,0 +1,82 @@
+[
+  {
+    "resourceId": "i-0a1b2c3d4e5f6g7h8",
+    "type": "EC2",
+    "region": "us-east-1",
+    "monthlyCost": 245.50,
+    "utilizationPercent": 35,
+    "instanceType": "t3.large"
+  },
+  {
+    "resourceId": "vol-1a2b3c4d5e6f7g8h9",
+    "type": "EBS",
+    "region": "us-east-1",
+    "monthlyCost": 89.20,
+    "utilizationPercent": 60,
+    "sizeGB": 500
+  },
+  {
+    "resourceId": "i-9h8g7f6e5d4c3b2a1",
+    "type": "EC2",
+    "region": "us-west-2",
+    "monthlyCost": 512.75,
+    "utilizationPercent": 15,
+    "instanceType": "m5.xlarge"
+  },
+  {
+    "resourceId": "db-instance-prod-001",
+    "type": "RDS",
+    "region": "us-east-1",
+    "monthlyCost": 1250.00,
+    "utilizationPercent": 78,
+    "engine": "PostgreSQL"
+  },
+  {
+    "resourceId": "s3-bucket-logs-2024",
+    "type": "S3",
+    "region": "us-east-1",
+    "monthlyCost": 125.30,
+    "utilizationPercent": 85,
+    "storageGB": 2500
+  },
+  {
+    "resourceId": "i-3c4d5e6f7g8h9i0j1",
+    "type": "EC2",
+    "region": "eu-west-1",
+    "monthlyCost": 445.80,
+    "utilizationPercent": 22,
+    "instanceType": "c5.2xlarge"
+  },
+  {
+    "resourceId": "elb-app-prod-lb",
+    "type": "ELB",
+    "region": "us-east-1",
+    "monthlyCost": 85.50,
+    "utilizationPercent": 55,
+    "lbType": "Application"
+  },
+  {
+    "resourceId": "nat-gateway-public-1a",
+    "type": "NAT Gateway",
+    "region": "us-east-1",
+    "monthlyCost": 156.40,
+    "utilizationPercent": 42,
+    "dataProcessedGB": 320
+  },
+  {
+    "resourceId": "vol-backup-daily-001",
+    "type": "EBS",
+    "region": "us-west-2",
+    "monthlyCost": 45.00,
+    "utilizationPercent": 30,
+    "sizeGB": 250
+  },
+  {
+    "resourceId": "cache-redis-cluster-01",
+    "type": "ElastiCache",
+    "region": "us-east-1",
+    "monthlyCost": 380.25,
+    "utilizationPercent": 68,
+    "nodeType": "cache.r6g.large"
+  }
+]
