@@ -52,8 +52,8 @@ export class SchedulerService {
       await this.checkTrustedAdvisor();
     });
 
-    // Evolve synthetic data every 15 minutes when simulation mode is ON
-    cron.schedule('*/15 * * * *', async () => {
+    // Optimized: Evolve synthetic data every 30 minutes when simulation mode is ON (reduced frequency)
+    cron.schedule('*/30 * * * *', async () => {
       const config = await configService.getAgentConfig();
       if (config.simulationMode) {
         console.log('📊 [SIMULATION MODE] Evolving synthetic resource data...');
@@ -61,8 +61,8 @@ export class SchedulerService {
       }
     });
 
-    // Add new synthetic resources occasionally (every 2 hours) when simulation mode is ON
-    cron.schedule('0 */2 * * *', async () => {
+    // Optimized: Add new synthetic resources occasionally (every 4 hours) when simulation mode is ON
+    cron.schedule('0 */4 * * *', async () => {
       const config = await configService.getAgentConfig();
       if (config.simulationMode && Math.random() > 0.5) { // 50% chance
         console.log('📊 [SIMULATION MODE] Adding new synthetic resource...');

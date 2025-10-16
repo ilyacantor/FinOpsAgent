@@ -34,11 +34,22 @@ export class GeminiAIService {
       const text = response.text();
       
       // Parse the AI response into structured recommendations
-      return this.parseRecommendations(text, resources);
+      const recommendations = this.parseRecommendations(text, resources);
+      
+      // Invalidate cache after generating new recommendations (for fresh RAG on next run)
+      this.invalidateCache();
+      
+      return recommendations;
     } catch (error) {
       console.error("Error generating AI recommendations:", error);
       throw error;
     }
+  }
+
+  // Invalidate cache to ensure fresh data on next retrieval
+  public invalidateCache(): void {
+    this.contextCache = null;
+    console.log('🔄 RAG cache invalidated');
   }
 
   // RAG: Retrieve historical context from past optimizations (Optimized with caching)
