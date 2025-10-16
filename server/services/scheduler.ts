@@ -21,10 +21,9 @@ export class SchedulerService {
   }
 
   private initializeScheduledTasks() {
-    // AI-powered analysis every 6 hours using Gemini
+    // Resource analysis every 6 hours - checks Prod Mode to decide AI vs Heuristics
     cron.schedule('0 */6 * * *', async () => {
-      console.log('Running AI-powered resource analysis with Gemini 2.5 Flash...');
-      await this.analyzeWithAI();
+      await this.runResourceAnalysis();
     });
 
     // Sync cost data daily at 2 AM
@@ -38,6 +37,19 @@ export class SchedulerService {
       console.log('Running weekly Trusted Advisor check...');
       await this.checkTrustedAdvisor();
     });
+  }
+
+  // Determines which analysis method to use based on Prod Mode configuration
+  private async runResourceAnalysis() {
+    const config = await configService.getAgentConfig();
+    
+    if (config.prodMode) {
+      console.log('🚀 [PROD MODE ON] Running AI-powered analysis with Gemini 2.5 Flash + RAG...');
+      await this.analyzeWithAI();
+    } else {
+      console.log('⚙️ [PROD MODE OFF] Running heuristics-based analysis...');
+      await this.analyzeAWSResources();
+    }
   }
 
   private async analyzeAWSResources() {
@@ -161,7 +173,12 @@ export class SchedulerService {
     }
   }
 
-  // Public method to trigger AI analysis manually
+  // Public method to trigger analysis manually - respects Prod Mode setting
+  public async triggerAnalysis() {
+    await this.runResourceAnalysis();
+  }
+
+  // Backward compatibility: public method to trigger AI analysis manually
   public async triggerAIAnalysis() {
     await this.analyzeWithAI();
   }
