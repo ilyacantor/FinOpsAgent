@@ -5,6 +5,11 @@ import { storage } from "../storage.js";
 export class GeminiAIService {
   private genAI: GoogleGenerativeAI;
   private model: any;
+  private contextCache: {
+    data: any;
+    timestamp: number;
+  } | null = null;
+  private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache
 
   constructor() {
     const apiKey = process.env.GEMINI_API_KEY;
@@ -36,27 +41,44 @@ export class GeminiAIService {
     }
   }
 
-  // RAG: Retrieve historical context from past optimizations
+  // RAG: Retrieve historical context from past optimizations (Optimized with caching)
   private async retrieveHistoricalContext(): Promise<{
     pastRecommendations: any[];
     optimizationHistory: any[];
     successPatterns: any;
   }> {
     try {
-      // Get recent recommendations
-      const pastRecommendations = await storage.getAllRecommendations();
-      
-      // Get optimization history with success/failure data
-      const optimizationHistory = await storage.getAllOptimizationHistory();
+      // Check cache first
+      const now = Date.now();
+      if (this.contextCache && (now - this.contextCache.timestamp) < this.CACHE_TTL) {
+        console.log('📦 Using cached RAG context (performance optimization)');
+        return this.contextCache.data;
+      }
+
+      // Optimized: Fetch only the last 10 records directly from database with LIMIT
+      const [pastRecommendations, optimizationHistory] = await Promise.all([
+        storage.getRecentRecommendations(10),
+        storage.getRecentOptimizationHistory(10)
+      ]);
       
       // Calculate success patterns
       const successPatterns = this.analyzeSuccessPatterns(optimizationHistory);
       
-      return {
-        pastRecommendations: pastRecommendations.slice(-10), // Last 10 recommendations
-        optimizationHistory: optimizationHistory.slice(-10), // Last 10 executions
+      const result = {
+        pastRecommendations,
+        optimizationHistory,
         successPatterns
       };
+
+      // Update cache
+      this.contextCache = {
+        data: result,
+        timestamp: now
+      };
+
+      console.log('✨ RAG context fetched and cached');
+      
+      return result;
     } catch (error) {
       console.error("Error retrieving historical context for RAG:", error);
       return {

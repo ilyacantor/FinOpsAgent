@@ -28,12 +28,14 @@ export interface IStorage {
   // Recommendations
   createRecommendation(recommendation: InsertRecommendation): Promise<Recommendation>;
   getRecommendations(status?: string): Promise<Recommendation[]>;
+  getRecentRecommendations(limit: number): Promise<Recommendation[]>; // Optimized: fetch limited records
   getRecommendation(id: string): Promise<Recommendation | undefined>;
   updateRecommendationStatus(id: string, status: string): Promise<Recommendation | undefined>;
   
   // Optimization History
   createOptimizationHistory(history: InsertOptimizationHistory): Promise<OptimizationHistory>;
   getOptimizationHistory(limit?: number): Promise<OptimizationHistory[]>;
+  getRecentOptimizationHistory(limit: number): Promise<OptimizationHistory[]>; // Optimized: fetch limited records
 
   // Approval Requests
   createApprovalRequest(request: InsertApprovalRequest): Promise<ApprovalRequest>;
@@ -193,6 +195,24 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getOptimizationHistory(limit = 50): Promise<OptimizationHistory[]> {
+    return await db
+      .select()
+      .from(optimizationHistory)
+      .orderBy(desc(optimizationHistory.createdAt))
+      .limit(limit);
+  }
+
+  // Optimized: Get recent recommendations with database-level limit
+  async getRecentRecommendations(limit: number): Promise<Recommendation[]> {
+    return await db
+      .select()
+      .from(recommendations)
+      .orderBy(desc(recommendations.createdAt))
+      .limit(limit);
+  }
+
+  // Optimized: Get recent optimization history with database-level limit
+  async getRecentOptimizationHistory(limit: number): Promise<OptimizationHistory[]> {
     return await db
       .select()
       .from(optimizationHistory)
