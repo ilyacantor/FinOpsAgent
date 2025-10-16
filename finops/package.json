@@ -1,0 +1,14 @@
+{
+  "name": "finops-phase1-prototype",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "FinOps Phase 1 Prototype - DCL Connected AWS Resource Dashboard",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node index.js"
+  },
+  "keywords": ["finops", "aws", "cost-optimization"],
+  "author": "",
+  "license": "MIT"
+}
