@@ -1,4 +1,4 @@
-import { Activity, Bot, ChartLine, Cog, Shield, Lightbulb, BarChart3 } from "lucide-react";
+import { Activity, Bot, ChartLine, Cog, Shield, Lightbulb, BarChart3, Presentation } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
 export function Sidebar() {
@@ -22,6 +22,20 @@ export function Sidebar() {
       
       <nav className="px-4 pb-4">
         <ul className="space-y-2">
+          <li>
+            <Link 
+              href="/executive" 
+              className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium ${
+                isActive('/executive') 
+                  ? 'bg-primary text-primary-foreground' 
+                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+              }`}
+              data-testid="nav-executive"
+            >
+              <Presentation className="w-5 h-5 mr-3" />
+              Executive Dashboard
+            </Link>
+          </li>
           <li>
             <Link 
               href="/" 
