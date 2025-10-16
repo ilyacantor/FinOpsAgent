@@ -84,7 +84,7 @@ export function Header() {
                   className={agentConfig.prodMode ? "bg-cyan-500" : ""}
                   data-testid="header-prod-mode-badge"
                 >
-                  {agentConfig.prodMode ? "AI" : "HEUR"}
+                  {agentConfig.prodMode ? "ON" : "OFF"}
                 </Badge>
               </div>
               <Switch
