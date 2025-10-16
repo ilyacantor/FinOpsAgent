@@ -2,6 +2,7 @@ import { storage } from '../storage.js';
 
 export interface AgentConfig {
   autonomousMode: boolean;
+  prodMode: boolean; // When ON: AI mode with RAG, When OFF: heuristics mode
   maxAutonomousRiskLevel: number;
   approvalRequiredAboveSavings: number;
   autoExecuteTypes: string[];
@@ -27,6 +28,12 @@ export class ConfigService {
         key: 'agent.autonomous_mode',
         value: 'false',
         description: 'Enable autonomous execution of recommendations without human approval',
+        updatedBy: 'system'
+      },
+      {
+        key: 'agent.prod_mode',
+        value: 'false',
+        description: 'Production Mode: When ON, use AI-powered analysis with RAG. When OFF, use heuristics-based analysis',
         updatedBy: 'system'
       },
       {
@@ -65,6 +72,7 @@ export class ConfigService {
     
     return {
       autonomousMode: this.getBooleanConfig('agent.autonomous_mode', false),
+      prodMode: this.getBooleanConfig('agent.prod_mode', false),
       maxAutonomousRiskLevel: this.getNumberConfig('agent.max_autonomous_risk_level', 5.0),
       approvalRequiredAboveSavings: this.getNumberConfig('agent.approval_required_above_savings', 10000),
       autoExecuteTypes: this.getArrayConfig('agent.auto_execute_types', ['resize', 'storage-class'])
@@ -79,6 +87,11 @@ export class ConfigService {
   async setMaxAutonomousRiskLevel(riskLevel: number, updatedBy: string): Promise<void> {
     await storage.updateSystemConfig('agent.max_autonomous_risk_level', riskLevel.toString(), updatedBy);
     this.configCache.set('agent.max_autonomous_risk_level', riskLevel.toString());
+  }
+
+  async setProdMode(enabled: boolean, updatedBy: string): Promise<void> {
+    await storage.updateSystemConfig('agent.prod_mode', enabled.toString(), updatedBy);
+    this.configCache.set('agent.prod_mode', enabled.toString());
   }
 
   // Method to invalidate cache when configuration is updated externally
