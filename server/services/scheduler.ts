@@ -3,6 +3,7 @@ import { awsService } from './aws';
 import { sendOptimizationRecommendation, sendOptimizationComplete } from './slack';
 import { storage } from '../storage';
 import { configService } from './config';
+import { geminiAI } from './gemini-ai';
 
 export class SchedulerService {
   constructor() {
@@ -20,10 +21,10 @@ export class SchedulerService {
   }
 
   private initializeScheduledTasks() {
-    // Analyze AWS resources every 6 hours
+    // AI-powered analysis every 6 hours using Gemini
     cron.schedule('0 */6 * * *', async () => {
-      console.log('Running scheduled AWS resource analysis...');
-      await this.analyzeAWSResources();
+      console.log('Running AI-powered resource analysis with Gemini 2.5 Flash...');
+      await this.analyzeWithAI();
     });
 
     // Sync cost data daily at 2 AM
@@ -157,6 +158,97 @@ export class SchedulerService {
       }
     } catch (error) {
       console.error('Error analyzing AWS resources:', error);
+    }
+  }
+
+  private async analyzeWithAI() {
+    try {
+      console.log('🤖 Starting AI-powered resource analysis with Gemini 2.5 Flash...');
+      
+      // Get all AWS resources from database
+      const allResources = await storage.getAllAwsResources();
+      
+      if (allResources.length === 0) {
+        console.log('No resources found to analyze');
+        return;
+      }
+
+      console.log(`Analyzing ${allResources.length} resources with AI...`);
+      
+      // Use Gemini AI to analyze resources and generate recommendations
+      const aiRecommendations = await geminiAI.analyzeResourcesForOptimization(allResources);
+      
+      console.log(`🎯 AI generated ${aiRecommendations.length} recommendations`);
+      
+      for (const aiRec of aiRecommendations) {
+        // Check if we already have a pending recommendation for this resource
+        const existingRecommendations = await storage.getRecommendations('pending');
+        const hasExisting = existingRecommendations.some(r => r.resourceId === aiRec.resourceId);
+        
+        if (!hasExisting) {
+          // Create new AI-powered recommendation
+          const recommendation = await storage.createRecommendation(aiRec);
+          
+          console.log(`✨ Created AI recommendation: ${recommendation.title}`);
+
+          // Check if we can execute autonomously
+          const canExecuteAutonomously = await configService.canExecuteAutonomously({
+            type: recommendation.type,
+            riskLevel: recommendation.riskLevel,
+            projectedAnnualSavings: recommendation.projectedAnnualSavings
+          });
+
+          if (canExecuteAutonomously) {
+            // Execute immediately in autonomous mode
+            try {
+              await this.executeOptimization(recommendation);
+              await storage.updateRecommendationStatus(recommendation.id, 'executed');
+
+              // Send Slack notification about autonomous execution
+              await sendOptimizationComplete({
+                title: `[AI AUTONOMOUS] ${recommendation.title}`,
+                resourceId: recommendation.resourceId,
+                actualSavings: Number(recommendation.projectedMonthlySavings),
+                status: 'success'
+              });
+
+              console.log(`🤖 AI-powered autonomous execution: ${recommendation.title}`);
+            } catch (error) {
+              await storage.updateRecommendationStatus(recommendation.id, 'failed');
+              
+              // Create failed optimization history entry
+              await storage.createOptimizationHistory({
+                recommendationId: recommendation.id,
+                executedBy: 'gemini-ai-agent',
+                executionDate: new Date(),
+                beforeConfig: recommendation.currentConfig as any,
+                afterConfig: recommendation.recommendedConfig as any,
+                status: 'failed',
+                errorMessage: error instanceof Error ? error.message : String(error)
+              });
+
+              console.error(`❌ AI autonomous execution failed for ${recommendation.id}:`, error);
+            }
+          } else {
+            // Send notification requiring approval
+            await sendOptimizationRecommendation({
+              title: `[AI] ${recommendation.title}`,
+              description: recommendation.description,
+              resourceId: recommendation.resourceId,
+              projectedMonthlySavings: Number(recommendation.projectedMonthlySavings),
+              projectedAnnualSavings: Number(recommendation.projectedAnnualSavings),
+              priority: recommendation.priority,
+              recommendationId: recommendation.id
+            });
+            
+            console.log(`📧 Sent AI recommendation for approval: ${recommendation.title}`);
+          }
+        }
+      }
+      
+      console.log('✅ AI analysis completed successfully');
+    } catch (error) {
+      console.error('❌ Error in AI-powered analysis:', error);
     }
   }
 
