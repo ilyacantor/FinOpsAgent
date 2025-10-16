@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FinOps Executive Dashboard - Spend & Utilization</title>
+  <title>FinOps Executive Dashboard - Complete Platform</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     * {
@@ -20,7 +20,7 @@
     }
 
     .container {
-      max-width: 1400px;
+      max-width: 1600px;
       margin: 0 auto;
     }
 
@@ -28,6 +28,9 @@
       margin-bottom: 30px;
       padding-bottom: 20px;
       border-bottom: 2px solid #0BCAD9;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
     h1 {
@@ -39,6 +42,21 @@
     .subtitle {
       color: #9CA3AF;
       font-size: 14px;
+    }
+
+    .export-btn {
+      background: #0BCAD9;
+      color: #1B1E23;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .export-btn:hover {
+      opacity: 0.8;
     }
 
     .stats {
@@ -69,105 +87,46 @@
       font-weight: 600;
     }
 
-    .resources-table {
-      background: #252930;
-      border-radius: 8px;
-      overflow: hidden;
+    .stat-subvalue {
+      color: #9CA3AF;
+      font-size: 14px;
+      margin-top: 4px;
     }
 
-    .table-header {
-      background: #2D3139;
-      padding: 15px 20px;
-      border-bottom: 1px solid #0BCAD9;
-    }
-
-    .table-header h2 {
-      color: #E5E7EB;
-      font-size: 18px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    thead {
-      background: #2D3139;
-    }
-
-    th {
-      text-align: left;
-      padding: 12px 20px;
-      color: #0BCAD9;
-      font-weight: 600;
-      font-size: 13px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    td {
-      padding: 16px 20px;
-      border-top: 1px solid #2D3139;
-      color: #E5E7EB;
-    }
-
-    tbody tr:hover {
-      background: #2D3139;
-    }
-
-    .type-badge {
-      display: inline-block;
-      padding: 4px 10px;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: 500;
-      background: rgba(11, 202, 217, 0.15);
-      color: #0BCAD9;
-    }
-
-    .cost {
-      color: #10B981;
-      font-weight: 600;
-    }
-
-    .utilization {
+    .tabs {
       display: flex;
-      align-items: center;
       gap: 10px;
-    }
-
-    .utilization-bar {
-      flex: 1;
-      height: 6px;
-      background: #2D3139;
-      border-radius: 3px;
-      overflow: hidden;
-    }
-
-    .utilization-fill {
-      height: 100%;
-      background: #0BCAD9;
-      border-radius: 3px;
-    }
-
-    .utilization-text {
-      font-size: 12px;
-      color: #9CA3AF;
-      min-width: 40px;
-    }
-
-    .loading {
-      text-align: center;
-      padding: 40px;
-      color: #9CA3AF;
-    }
-
-    .error {
-      background: #991B1B;
-      color: #FEE2E2;
-      padding: 15px 20px;
-      border-radius: 8px;
       margin-bottom: 20px;
+      border-bottom: 2px solid #2D3139;
+    }
+
+    .tab {
+      background: none;
+      border: none;
+      color: #9CA3AF;
+      padding: 12px 20px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .tab:hover {
+      color: #E5E7EB;
+    }
+
+    .tab.active {
+      color: #0BCAD9;
+      border-bottom-color: #0BCAD9;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
     }
 
     .charts-grid {
@@ -196,21 +155,179 @@
       height: 300px;
     }
 
-    .stat-subvalue {
+    .slider-container {
+      margin-top: 15px;
+      padding: 15px;
+      background: #2D3139;
+      border-radius: 6px;
+    }
+
+    .slider-label {
       color: #9CA3AF;
+      font-size: 13px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .slider {
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: #2D3139;
+      outline: none;
+      -webkit-appearance: none;
+    }
+
+    .slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #0BCAD9;
+      cursor: pointer;
+    }
+
+    .slider::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #0BCAD9;
+      cursor: pointer;
+      border: none;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #252930;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    thead {
+      background: #2D3139;
+    }
+
+    th {
+      text-align: left;
+      padding: 12px 16px;
+      color: #0BCAD9;
+      font-weight: 600;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    td {
+      padding: 16px;
+      border-top: 1px solid #2D3139;
+      color: #E5E7EB;
       font-size: 14px;
-      margin-top: 4px;
+    }
+
+    tbody tr:hover {
+      background: #2D3139;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .badge-type {
+      background: rgba(11, 202, 217, 0.15);
+      color: #0BCAD9;
+    }
+
+    .badge-high {
+      background: rgba(239, 68, 68, 0.15);
+      color: #EF4444;
+    }
+
+    .badge-medium {
+      background: rgba(245, 158, 11, 0.15);
+      color: #F59E0B;
+    }
+
+    .badge-low {
+      background: rgba(16, 185, 129, 0.15);
+      color: #10B981;
+    }
+
+    .action-btn {
+      padding: 6px 14px;
+      border: none;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      margin-right: 5px;
+    }
+
+    .action-btn:hover {
+      opacity: 0.8;
+    }
+
+    .btn-apply {
+      background: #10B981;
+      color: white;
+    }
+
+    .btn-reject {
+      background: #EF4444;
+      color: white;
+    }
+
+    .btn-thumbs {
+      background: #252930;
+      border: 1px solid #0BCAD9;
+      color: #0BCAD9;
+      padding: 4px 10px;
+      font-size: 16px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #9CA3AF;
+    }
+
+    .error {
+      background: #991B1B;
+      color: #FEE2E2;
+      padding: 15px 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .success {
+      background: #065F46;
+      color: #D1FAE5;
+      padding: 15px 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: none;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <header>
-      <h1>FinOps Executive Dashboard</h1>
-      <p class="subtitle">Spend & Utilization Visibility - Mission 1 Epic A</p>
+      <div>
+        <h1>FinOps Executive Dashboard</h1>
+        <p class="subtitle">Complete FinOps Platform - Missions 1-7</p>
+      </div>
+      <button class="export-btn" onclick="downloadCSV()">📥 Download Report (CSV)</button>
     </header>
 
     <div id="error" class="error" style="display: none;"></div>
+    <div id="success" class="success"></div>
 
     <div class="stats" id="stats">
       <div class="stat-card">
@@ -223,200 +340,386 @@
         <div class="stat-subvalue" id="annual-projection">-</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Avg CPU Utilization</div>
-        <div class="stat-value" id="cpu-utilization">-</div>
+        <div class="stat-label">Savings Identified</div>
+        <div class="stat-value" id="savings-identified">-</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Avg Memory Utilization</div>
-        <div class="stat-value" id="memory-utilization">-</div>
+        <div class="stat-label">Savings Realized</div>
+        <div class="stat-value" id="savings-realized">-</div>
       </div>
     </div>
 
-    <div class="charts-grid">
-      <div class="chart-card">
-        <h3 class="chart-title">Spend by Resource Type</h3>
-        <div class="chart-container">
-          <canvas id="spend-breakdown-chart"></canvas>
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('overview')">Overview</button>
+      <button class="tab" onclick="switchTab('recommendations')">Recommendations</button>
+      <button class="tab" onclick="switchTab('actions')">Action History</button>
+      <button class="tab" onclick="switchTab('forecast')">Forecast</button>
+      <button class="tab" onclick="switchTab('governance')">Governance</button>
+    </div>
+
+    <div id="overview-tab" class="tab-content active">
+      <div class="charts-grid">
+        <div class="chart-card">
+          <h3 class="chart-title">Spend by Resource Type</h3>
+          <div class="chart-container">
+            <canvas id="spend-breakdown-chart"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <h3 class="chart-title">6-Month Spend Trend</h3>
+          <div class="chart-container">
+            <canvas id="trend-chart"></canvas>
+          </div>
         </div>
       </div>
+      
       <div class="chart-card">
-        <h3 class="chart-title">6-Month Spend Trend</h3>
+        <h3 class="chart-title">AWS Resources</h3>
+        <div id="resources-table-container"></div>
+      </div>
+    </div>
+
+    <div id="recommendations-tab" class="tab-content">
+      <div class="chart-card">
+        <h3 class="chart-title">Optimization Opportunities (<span id="rec-count">0</span>)</h3>
+        <div id="recommendations-table-container"></div>
+      </div>
+      <div class="chart-card" style="margin-top: 20px;">
+        <h3 class="chart-title">Feedback Analytics</h3>
         <div class="chart-container">
-          <canvas id="trend-chart"></canvas>
+          <canvas id="feedback-chart"></canvas>
         </div>
       </div>
     </div>
 
-    <div class="resources-table">
-      <div class="table-header">
-        <h2>AWS Resources</h2>
+    <div id="actions-tab" class="tab-content">
+      <div class="chart-card">
+        <h3 class="chart-title">Action History (<span id="action-count">0</span>)</h3>
+        <div id="actions-table-container"></div>
       </div>
-      <div id="table-container">
-        <div class="loading">Loading resources...</div>
+    </div>
+
+    <div id="forecast-tab" class="tab-content">
+      <div class="chart-card">
+        <h3 class="chart-title">Spend Forecast with Optimization Simulation</h3>
+        <div class="chart-container">
+          <canvas id="forecast-chart"></canvas>
+        </div>
+        <div class="slider-container">
+          <div class="slider-label">
+            <span>Optimization Adoption Rate</span>
+            <span id="adoption-value">0%</span>
+          </div>
+          <input type="range" class="slider" id="adoption-slider" min="0" max="100" value="0" oninput="updateForecast(this.value)">
+          <div style="margin-top: 10px; color: #9CA3AF; font-size: 13px;">
+            Projected Savings: $<span id="projected-savings">0</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="governance-tab" class="tab-content">
+      <div class="chart-card">
+        <h3 class="chart-title">Policy Violations (<span id="violations-count">0</span>)</h3>
+        <div id="violations-table-container"></div>
       </div>
     </div>
   </div>
 
   <script>
-    let spendBreakdownChart = null;
-    let trendChart = null;
+    let charts = {};
+    let currentTab = 'overview';
+
+    function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      
+      event.target.classList.add('active');
+      document.getElementById(`${tab}-tab`).classList.add('active');
+    }
 
     async function loadSpendSummary() {
       try {
         const response = await fetch('/api/finops/spend-summary');
-        if (!response.ok) throw new Error('Failed to fetch spend summary');
-        
         const summary = await response.json();
         
-        // Update stat cards
-        document.getElementById('monthly-spend').textContent = '$' + summary.monthlySpend.toLocaleString('en-US', {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2
-        });
+        document.getElementById('monthly-spend').textContent = '$' + summary.monthlySpend.toLocaleString('en-US', { minimumFractionDigits: 2 });
+        document.getElementById('ytd-spend').textContent = '$' + summary.ytdSpend.toLocaleString('en-US', { minimumFractionDigits: 2 });
+        document.getElementById('annual-projection').textContent = 'Annual Proj: $' + summary.annualProjection.toLocaleString('en-US', { minimumFractionDigits: 0 });
         
-        document.getElementById('ytd-spend').textContent = '$' + summary.ytdSpend.toLocaleString('en-US', {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2
-        });
-        
-        document.getElementById('annual-projection').textContent = 'Annual Proj: $' + 
-          summary.annualProjection.toLocaleString('en-US', {
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0
-          });
-        
-        document.getElementById('cpu-utilization').textContent = summary.avgCpuUtilization + '%';
-        document.getElementById('memory-utilization').textContent = summary.avgMemoryUtilization + '%';
-        
-        // Create Spend Breakdown Chart (Doughnut)
+        // Spend Breakdown Chart
         const spendTypes = Object.keys(summary.spendByType);
         const spendValues = Object.values(summary.spendByType);
-        const colors = ['#0BCAD9', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
+        const colors = ['#0BCAD9', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#06B6D4'];
         
-        if (spendBreakdownChart) spendBreakdownChart.destroy();
-        const ctx1 = document.getElementById('spend-breakdown-chart').getContext('2d');
-        spendBreakdownChart = new Chart(ctx1, {
+        if (charts.spendBreakdown) charts.spendBreakdown.destroy();
+        charts.spendBreakdown = new Chart(document.getElementById('spend-breakdown-chart'), {
           type: 'doughnut',
           data: {
             labels: spendTypes,
-            datasets: [{
-              data: spendValues,
-              backgroundColor: colors,
-              borderColor: '#1B1E23',
-              borderWidth: 2
-            }]
+            datasets: [{ data: spendValues, backgroundColor: colors, borderColor: '#1B1E23', borderWidth: 2 }]
           },
           options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-              legend: {
-                position: 'bottom',
-                labels: {
-                  color: '#E5E7EB',
-                  padding: 15,
-                  font: { size: 12 }
-                }
-              },
-              tooltip: {
-                callbacks: {
-                  label: function(context) {
-                    const label = context.label || '';
-                    const value = context.parsed || 0;
-                    return label + ': $' + value.toLocaleString('en-US', {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2
-                    });
-                  }
-                }
-              }
+              legend: { position: 'bottom', labels: { color: '#E5E7EB', padding: 15, font: { size: 12 } } },
+              tooltip: { callbacks: { label: ctx => ctx.label + ': $' + ctx.parsed.toLocaleString('en-US', { minimumFractionDigits: 2 }) } }
             }
           }
         });
         
-        // Create Trend Line Chart
-        const months = summary.historicalTrend.map(d => d.month);
-        const spendData = summary.historicalTrend.map(d => d.spend);
-        
-        if (trendChart) trendChart.destroy();
-        const ctx2 = document.getElementById('trend-chart').getContext('2d');
-        trendChart = new Chart(ctx2, {
+        // Trend Chart
+        if (charts.trend) charts.trend.destroy();
+        charts.trend = new Chart(document.getElementById('trend-chart'), {
           type: 'line',
           data: {
-            labels: months,
+            labels: summary.historicalTrend.map(d => d.month),
             datasets: [{
               label: 'Monthly Spend',
-              data: spendData,
+              data: summary.historicalTrend.map(d => d.spend),
               borderColor: '#0BCAD9',
               backgroundColor: 'rgba(11, 202, 217, 0.1)',
               borderWidth: 3,
               fill: true,
               tension: 0.4,
               pointBackgroundColor: '#0BCAD9',
-              pointBorderColor: '#1B1E23',
-              pointBorderWidth: 2,
-              pointRadius: 5,
-              pointHoverRadius: 7
+              pointRadius: 5
             }]
           },
           options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                display: false
-              },
-              tooltip: {
-                callbacks: {
-                  label: function(context) {
-                    return '$' + context.parsed.y.toLocaleString('en-US', {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2
-                    });
-                  }
-                }
-              }
-            },
+            plugins: { legend: { display: false } },
             scales: {
-              y: {
-                beginAtZero: true,
-                ticks: {
-                  color: '#9CA3AF',
-                  callback: function(value) {
-                    return '$' + value.toLocaleString('en-US');
-                  }
-                },
-                grid: {
-                  color: 'rgba(156, 163, 175, 0.1)'
-                }
-              },
-              x: {
-                ticks: {
-                  color: '#9CA3AF'
-                },
-                grid: {
-                  color: 'rgba(156, 163, 175, 0.1)'
-                }
-              }
+              y: { ticks: { color: '#9CA3AF', callback: v => '$' + v.toLocaleString() }, grid: { color: 'rgba(156, 163, 175, 0.1)' } },
+              x: { ticks: { color: '#9CA3AF' }, grid: { color: 'rgba(156, 163, 175, 0.1)' } }
             }
           }
         });
-        
       } catch (error) {
-        console.error('Error loading spend summary:', error);
-        document.getElementById('error').textContent = 'Error loading spend summary: ' + error.message;
-        document.getElementById('error').style.display = 'block';
+        showError('Error loading spend summary: ' + error.message);
+      }
+    }
+
+    async function loadRecommendations() {
+      try {
+        const response = await fetch('/api/finops/recommendations');
+        const recommendations = await response.json();
+        
+        document.getElementById('rec-count').textContent = recommendations.length;
+        
+        const totalSavings = recommendations.reduce((sum, r) => sum + r.potentialSavings, 0);
+        document.getElementById('savings-identified').textContent = '$' + totalSavings.toLocaleString('en-US', { minimumFractionDigits: 2 });
+        
+        const tableHTML = `
+          <table>
+            <thead>
+              <tr>
+                <th>Resource ID</th>
+                <th>Type</th>
+                <th>Reason</th>
+                <th>Savings</th>
+                <th>Confidence</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${recommendations.map(rec => `
+                <tr>
+                  <td><code>${rec.resourceId}</code></td>
+                  <td><span class="badge badge-type">${rec.resourceType}</span></td>
+                  <td>${rec.reason}</td>
+                  <td style="color: #10B981; font-weight: 600;">$${rec.potentialSavings.toFixed(2)}</td>
+                  <td>${(rec.confidence * 100).toFixed(0)}%</td>
+                  <td>
+                    <button class="action-btn btn-apply" onclick="handleAction('${rec.resourceId}', 'apply')">Apply</button>
+                    <button class="action-btn btn-reject" onclick="handleAction('${rec.resourceId}', 'reject')">Reject</button>
+                    <button class="action-btn btn-thumbs" onclick="submitFeedback('${rec.id}', 1)">👍</button>
+                    <button class="action-btn btn-thumbs" onclick="submitFeedback('${rec.id}', -1)">👎</button>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+        
+        document.getElementById('recommendations-table-container').innerHTML = tableHTML;
+        loadFeedbackChart();
+      } catch (error) {
+        showError('Error loading recommendations: ' + error.message);
+      }
+    }
+
+    async function handleAction(resourceId, actionType) {
+      try {
+        const response = await fetch('/api/finops/actions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ resourceId, actionType, result: 'completed' })
+        });
+        
+        if (response.ok) {
+          showSuccess(`Action ${actionType} recorded for ${resourceId}`);
+          loadActions();
+          loadReport();
+        }
+      } catch (error) {
+        showError('Error recording action: ' + error.message);
+      }
+    }
+
+    async function submitFeedback(recommendationId, outcome) {
+      try {
+        const response = await fetch('/api/finops/feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ recommendationId, outcome })
+        });
+        
+        if (response.ok) {
+          showSuccess('Feedback submitted!');
+          loadRecommendations();
+        }
+      } catch (error) {
+        showError('Error submitting feedback: ' + error.message);
+      }
+    }
+
+    async function loadActions() {
+      try {
+        const response = await fetch('/api/finops/actions');
+        const actions = await response.json();
+        
+        document.getElementById('action-count').textContent = actions.length;
+        
+        const tableHTML = actions.length > 0 ? `
+          <table>
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>Resource ID</th>
+                <th>Action Type</th>
+                <th>Result</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${actions.reverse().map(action => `
+                <tr>
+                  <td>${new Date(action.timestamp).toLocaleString()}</td>
+                  <td><code>${action.resourceId}</code></td>
+                  <td><span class="badge ${action.actionType === 'apply' ? 'badge-low' : 'badge-medium'}">${action.actionType}</span></td>
+                  <td>${action.result}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        ` : '<div class="loading">No actions logged yet</div>';
+        
+        document.getElementById('actions-table-container').innerHTML = tableHTML;
+      } catch (error) {
+        showError('Error loading actions: ' + error.message);
+      }
+    }
+
+    async function updateForecast(adoptionRate) {
+      document.getElementById('adoption-value').textContent = adoptionRate + '%';
+      
+      try {
+        const response = await fetch(`/api/finops/forecast?adoptionRate=${adoptionRate}`);
+        const data = await response.json();
+        
+        document.getElementById('projected-savings').textContent = data.projectedSavings.toFixed(2);
+        
+        const allMonths = [...data.historical.map(d => d.month), ...data.forecast.map(d => d.month)];
+        const allData = [...data.historical.map(d => d.spend), ...data.forecast.map(d => d.spend)];
+        
+        if (charts.forecast) charts.forecast.destroy();
+        charts.forecast = new Chart(document.getElementById('forecast-chart'), {
+          type: 'line',
+          data: {
+            labels: allMonths,
+            datasets: [
+              {
+                label: 'Historical',
+                data: [...data.historical.map(d => d.spend), ...Array(data.forecast.length).fill(null)],
+                borderColor: '#0BCAD9',
+                backgroundColor: 'rgba(11, 202, 217, 0.1)',
+                borderWidth: 3,
+                fill: true
+              },
+              {
+                label: 'Forecast',
+                data: [...Array(data.historical.length).fill(null), ...data.forecast.map(d => d.spend)],
+                borderColor: '#F59E0B',
+                backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                borderWidth: 3,
+                borderDash: [5, 5],
+                fill: true
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: '#E5E7EB' } } },
+            scales: {
+              y: { ticks: { color: '#9CA3AF', callback: v => '$' + v.toLocaleString() }, grid: { color: 'rgba(156, 163, 175, 0.1)' } },
+              x: { ticks: { color: '#9CA3AF' }, grid: { color: 'rgba(156, 163, 175, 0.1)' } }
+            }
+          }
+        });
+      } catch (error) {
+        showError('Error loading forecast: ' + error.message);
+      }
+    }
+
+    async function loadViolations() {
+      try {
+        const response = await fetch('/api/finops/violations');
+        const violations = await response.json();
+        
+        document.getElementById('violations-count').textContent = violations.length;
+        
+        const tableHTML = violations.length > 0 ? `
+          <table>
+            <thead>
+              <tr>
+                <th>Policy</th>
+                <th>Resource</th>
+                <th>Type</th>
+                <th>Severity</th>
+                <th>Cost Impact</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${violations.map(viol => `
+                <tr>
+                  <td>${viol.policyName}</td>
+                  <td><code>${viol.resourceId}</code></td>
+                  <td><span class="badge badge-type">${viol.resourceType}</span></td>
+                  <td><span class="badge badge-${viol.severity}">${viol.severity}</span></td>
+                  <td>$${viol.costImpact.toFixed(2)}</td>
+                  <td>${viol.details}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        ` : '<div class="loading">No violations detected</div>';
+        
+        document.getElementById('violations-table-container').innerHTML = tableHTML;
+      } catch (error) {
+        showError('Error loading violations: ' + error.message);
       }
     }
 
     async function loadResources() {
       try {
         const response = await fetch('/api/resources');
-        if (!response.ok) throw new Error('Failed to fetch resources');
-        
         const resources = await response.json();
-
-        // Build table
+        
         const tableHTML = `
           <table>
             <thead>
@@ -429,46 +732,113 @@
               </tr>
             </thead>
             <tbody>
-              ${resources.map(resource => `
+              ${resources.map(r => `
                 <tr>
-                  <td><code>${resource.resourceId}</code></td>
-                  <td><span class="type-badge">${resource.type}</span></td>
-                  <td>${resource.region}</td>
-                  <td class="cost">$${resource.monthlyCost.toLocaleString('en-US', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                  })}</td>
-                  <td>
-                    <div class="utilization">
-                      <div class="utilization-bar">
-                        <div class="utilization-fill" style="width: ${resource.utilizationPercent}%"></div>
-                      </div>
-                      <span class="utilization-text">${resource.utilizationPercent}%</span>
-                    </div>
-                  </td>
+                  <td><code>${r.resourceId}</code></td>
+                  <td><span class="badge badge-type">${r.type}</span></td>
+                  <td>${r.region}</td>
+                  <td style="color: #10B981; font-weight: 600;">$${r.monthlyCost.toFixed(2)}</td>
+                  <td>${r.utilizationPercent}%</td>
                 </tr>
               `).join('')}
             </tbody>
           </table>
         `;
-
-        document.getElementById('table-container').innerHTML = tableHTML;
+        
+        document.getElementById('resources-table-container').innerHTML = tableHTML;
       } catch (error) {
-        console.error('Error loading resources:', error);
-        document.getElementById('error').textContent = 'Error loading resources: ' + error.message;
-        document.getElementById('error').style.display = 'block';
-        document.getElementById('table-container').innerHTML = '<div class="loading">Failed to load resources</div>';
+        showError('Error loading resources: ' + error.message);
       }
     }
 
-    // Load all data on page load
+    async function loadReport() {
+      try {
+        const response = await fetch('/api/finops/report');
+        const report = await response.json();
+        
+        document.getElementById('savings-realized').textContent = '$' + report.savingsRealized.toLocaleString('en-US', { minimumFractionDigits: 2 });
+      } catch (error) {
+        showError('Error loading report: ' + error.message);
+      }
+    }
+
+    async function loadFeedbackChart() {
+      try {
+        const response = await fetch('/api/finops/feedback');
+        const feedback = await response.json();
+        
+        if (charts.feedback) charts.feedback.destroy();
+        charts.feedback = new Chart(document.getElementById('feedback-chart'), {
+          type: 'bar',
+          data: {
+            labels: ['Positive', 'Negative'],
+            datasets: [{
+              label: 'Feedback Count',
+              data: [feedback.positive, feedback.negative],
+              backgroundColor: ['#10B981', '#EF4444']
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { 
+              legend: { display: false },
+              title: { display: true, text: `${feedback.positivePercentage}% Positive Feedback`, color: '#E5E7EB' }
+            },
+            scales: {
+              y: { ticks: { color: '#9CA3AF', stepSize: 1 }, grid: { color: 'rgba(156, 163, 175, 0.1)' } },
+              x: { ticks: { color: '#9CA3AF' }, grid: { color: 'rgba(156, 163, 175, 0.1)' } }
+            }
+          }
+        });
+      } catch (error) {
+        console.error('Error loading feedback:', error);
+      }
+    }
+
+    async function downloadCSV() {
+      try {
+        const response = await fetch('/api/finops/report?format=csv');
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = response.headers.get('Content-Disposition').split('filename=')[1];
+        a.click();
+        window.URL.revokeObjectURL(url);
+        showSuccess('Report downloaded successfully!');
+      } catch (error) {
+        showError('Error downloading report: ' + error.message);
+      }
+    }
+
+    function showError(message) {
+      const errorEl = document.getElementById('error');
+      errorEl.textContent = message;
+      errorEl.style.display = 'block';
+      setTimeout(() => errorEl.style.display = 'none', 5000);
+    }
+
+    function showSuccess(message) {
+      const successEl = document.getElementById('success');
+      successEl.textContent = message;
+      successEl.style.display = 'block';
+      setTimeout(() => successEl.style.display = 'none', 3000);
+    }
+
     async function loadDashboard() {
-      await Promise.all([loadSpendSummary(), loadResources()]);
+      await Promise.all([
+        loadSpendSummary(),
+        loadRecommendations(),
+        loadActions(),
+        loadViolations(),
+        loadResources(),
+        loadReport()
+      ]);
+      updateForecast(0);
     }
 
     loadDashboard();
-    
-    // Auto-refresh every 30 seconds
     setInterval(loadDashboard, 30000);
   </script>
 </body>

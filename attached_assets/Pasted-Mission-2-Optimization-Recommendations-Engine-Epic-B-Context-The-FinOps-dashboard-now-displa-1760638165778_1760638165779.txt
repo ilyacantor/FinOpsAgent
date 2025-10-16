@@ -1,0 +1,144 @@
+Mission 2 — Optimization & Recommendations Engine (Epic B)
+# Context
+The FinOps dashboard now displays spend visibility.
+We now add intelligence that detects inefficiencies.
+
+# Objective
+Create a recommendations engine that:
+- Analyzes utilization metrics from aws_resources.json.
+- Flags low CPU (<25%) or low Memory (<30%).
+- Calculates potential savings = 20% of monthly cost.
+- Assigns confidence scores (0.6 – 0.9).
+Expose as /API/finops/recommendations and display on dashboard.
+
+# Constraints
+- Keep rule-based logic (simple thresholds).
+- Avoid adding dependencies beyond current stack.
+- Table must be sortable and paginated.
+
+# Success Criteria
+- API returns structured recommendations.
+- Dashboard shows new “Optimization Opportunities” section.
+- Each entry includes resource ID, type, recommendation, savings, confidence.
+
+# Output Expectations
+- Backend function + frontend table.
+- Console summary of recommendations count and avg savings.
+
+🔁 Mission 3 — Action Loop & Audit (Epic C)
+# Context
+Recommendations exist, but no execution tracking.
+We need an action loop for apply/reject flows.
+
+# Objective
+Implement an actions log:
+- POST /API/finops/actions to record {resourceId, actionType, result, timestamp}
+- GET /API/finops/actions to retrieve history.
+Frontend:
+- Add Apply / Reject buttons.
+- Display “Action History” table showing past decisions.
+
+# Constraints
+- Use local JSON or in-memory array for storage.
+- Keep stateful UI in single HTML page.
+- Maintain port 3001 compatibility.
+
+# Success Criteria
+- Each action POST persists and appears immediately in history.
+- Log includes timestamps and results.
+
+# Output Expectations
+- Updated index.js routes + dashboard section.
+- Console summary of actions count.
+
+📈 Mission 4 — Forecasting & Simulation (Epic D)
+# Context
+We have current and historical spend data (6 months synthetic).
+We want predictive insight and scenario simulation.
+
+# Objective
+Create forecast API /finops/forecast that:
+- Performs linear projection for next 3 months.
+- Accepts optional query param adoptionRate (0–100) to simulate savings.
+Frontend:
+- Line chart showing historical + forecasted spend.
+- Slider to adjust adoptionRate and update projection.
+
+# Constraints
+- Use lightweight math (no external ML lib).
+- Chart must animate smoothly.
+
+# Success Criteria
+- Forecast updates on slider change.
+- Projection numbers match calculated trend.
+
+# Output Expectations
+- New API route + frontend chart.
+
+🧱 Mission 5 — Governance & Compliance (Epic E)
+# Context
+Optimization must align with policy rules.
+We need a governance layer.
+
+# Objective
+Implement policy evaluation:
+- Define policies (e.g., Low CPU, Untagged Resources).
+- Evaluate resources vs policies.
+- Return violations with severity and cost impact.
+
+Expose /API/finops/violations and render “Governance” tab.
+
+# Constraints
+- Policies stored in JSON file.
+- Severity = (cost × 0.1) for now.
+- Preserve dark UI and layout coherence.
+
+# Success Criteria
+- Violations table lists each policy and violating resource.
+- Totals summarized visually.
+
+# Output Expectations
+- Backend logic + UI tab.
+
+📊 Mission 6 — Reporting & Exports (Epic F)
+# Context
+CFO persona requires monthly reports.
+
+# Objective
+Build /API/finops/report that aggregates:
+- Total Spend, Savings Identified, Savings Realized, Adoption Rate.
+Provide “Download CSV” button on dashboard.
+
+# Constraints
+- CSV generated in memory using Node streams.
+- Include timestamp in filename.
+
+# Success Criteria
+- Button downloads valid CSV.
+- Report reflects latest dashboard state.
+
+# Output Expectations
+- API endpoint + frontend export button.
+
+🧠 Mission 7 — Learning & Explainability (Epic G)
+# Context
+Feedback from users should improve recommendations.
+
+# Objective
+Add feedback mechanism:
+- /API/finops/feedback POST {recommendationId, outcome:+1 or -1}.
+- Adjust confidence scores over time.
+Frontend:
+- 👍 / 👎 buttons beside each recommendation.
+- Chart showing % positive feedback.
+
+# Constraints
+- Local JSON storage.
+- Maintain real-time update after vote.
+
+# Success Criteria
+- Confidence values adjust after feedback.
+- Feedback chart updates dynamically.
+
+# Output Expectations
+- Modified recommendations logic + UI.
