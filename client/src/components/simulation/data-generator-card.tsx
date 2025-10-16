@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Database, Play, RotateCcw, CheckCircle, AlertCircle } from "lucide-react";
+import { Database, Play, RotateCcw, CheckCircle, AlertCircle, Sparkles } from "lucide-react";
 
 export function DataGeneratorCard() {
   const [hasData, setHasData] = useState(false);
@@ -62,6 +62,28 @@ export function DataGeneratorCard() {
     },
   });
 
+  const aiAnalysisMutation = useMutation({
+    mutationFn: () => apiRequest('POST', '/api/ai/analyze'),
+    onSuccess: () => {
+      toast({
+        title: "🤖 AI Analysis Started",
+        description: "Gemini 2.5 Flash is analyzing your resources. New recommendations will appear shortly.",
+      });
+      
+      // Refresh recommendations after a delay
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ['/api/recommendations'] });
+      }, 3000);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "AI Analysis Failed",
+        description: error.message || "Failed to start AI analysis",
+        variant: "destructive",
+      });
+    },
+  });
+
   return (
     <Card className="border-2 border-dashed border-primary/20 bg-primary/5">
       <CardHeader>
@@ -99,30 +121,49 @@ export function DataGeneratorCard() {
           </div>
         </div>
 
-        <div className="flex gap-2">
-          <Button
-            onClick={() => generateDataMutation.mutate()}
-            disabled={generateDataMutation.isPending}
-            className="flex-1"
-            data-testid="button-generate-data"
-          >
-            {generateDataMutation.isPending ? (
-              <RotateCcw className="w-4 h-4 mr-2 animate-spin" />
-            ) : (
-              <Play className="w-4 h-4 mr-2" />
+        <div className="space-y-2">
+          <div className="flex gap-2">
+            <Button
+              onClick={() => generateDataMutation.mutate()}
+              disabled={generateDataMutation.isPending}
+              className="flex-1"
+              data-testid="button-generate-data"
+            >
+              {generateDataMutation.isPending ? (
+                <RotateCcw className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Play className="w-4 h-4 mr-2" />
+              )}
+              {generateDataMutation.isPending ? 'Generating...' : 'Generate Simulation Data'}
+            </Button>
+
+            {hasData && (
+              <Button
+                onClick={() => clearDataMutation.mutate()}
+                disabled={clearDataMutation.isPending}
+                variant="outline"
+                size="sm"
+                data-testid="button-clear-data"
+              >
+                Clear
+              </Button>
             )}
-            {generateDataMutation.isPending ? 'Generating...' : 'Generate Simulation Data'}
-          </Button>
+          </div>
 
           {hasData && (
             <Button
-              onClick={() => clearDataMutation.mutate()}
-              disabled={clearDataMutation.isPending}
-              variant="outline"
-              size="sm"
-              data-testid="button-clear-data"
+              onClick={() => aiAnalysisMutation.mutate()}
+              disabled={aiAnalysisMutation.isPending}
+              variant="default"
+              className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
+              data-testid="button-ai-analyze"
             >
-              Clear
+              {aiAnalysisMutation.isPending ? (
+                <RotateCcw className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Sparkles className="w-4 h-4 mr-2" />
+              )}
+              {aiAnalysisMutation.isPending ? 'AI Analyzing...' : '🤖 Run AI Analysis (Gemini 2.5 Flash)'}
             </Button>
           )}
         </div>
