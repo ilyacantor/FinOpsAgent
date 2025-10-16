@@ -498,6 +498,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/agent-config/simulation-mode", requireAuth, async (req, res) => {
+    try {
+      const { enabled, updatedBy } = req.body;
+      
+      if (typeof enabled !== 'boolean') {
+        return res.status(400).json({ error: "Enabled must be a boolean value" });
+      }
+      
+      const { configService } = await import('./services/config.js');
+      await configService.setSimulationMode(enabled, updatedBy || 'system');
+      const agentConfig = await configService.getAgentConfig();
+      
+      // Broadcast configuration change to connected clients
+      broadcast({
+        type: 'agent_config_updated',
+        data: { simulationMode: enabled, updatedBy }
+      });
+      
+      res.json(agentConfig);
+    } catch (error) {
+      console.error("Error updating simulation mode:", error);
+      res.status(500).json({ error: "Failed to update simulation mode" });
+    }
+  });
+
   // Manual AI analysis trigger endpoint
   app.post("/api/ai/analyze", async (req, res) => {
     try {

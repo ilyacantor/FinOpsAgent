@@ -3,6 +3,7 @@ import { storage } from '../storage.js';
 export interface AgentConfig {
   autonomousMode: boolean;
   prodMode: boolean; // When ON: AI mode with RAG, When OFF: heuristics mode
+  simulationMode: boolean; // When ON: synthetic dynamic data generation, When OFF: static data
   maxAutonomousRiskLevel: number;
   approvalRequiredAboveSavings: number;
   autoExecuteTypes: string[];
@@ -34,6 +35,12 @@ export class ConfigService {
         key: 'agent.prod_mode',
         value: 'false',
         description: 'Production Mode: When ON, use AI-powered analysis with RAG. When OFF, use heuristics-based analysis',
+        updatedBy: 'system'
+      },
+      {
+        key: 'agent.simulation_mode',
+        value: 'false',
+        description: 'Simulation Mode: When ON, generate synthetic dynamic data. When OFF, use static data',
         updatedBy: 'system'
       },
       {
@@ -73,6 +80,7 @@ export class ConfigService {
     return {
       autonomousMode: this.getBooleanConfig('agent.autonomous_mode', false),
       prodMode: this.getBooleanConfig('agent.prod_mode', false),
+      simulationMode: this.getBooleanConfig('agent.simulation_mode', false),
       maxAutonomousRiskLevel: this.getNumberConfig('agent.max_autonomous_risk_level', 5.0),
       approvalRequiredAboveSavings: this.getNumberConfig('agent.approval_required_above_savings', 10000),
       autoExecuteTypes: this.getArrayConfig('agent.auto_execute_types', ['resize', 'storage-class'])
@@ -92,6 +100,11 @@ export class ConfigService {
   async setProdMode(enabled: boolean, updatedBy: string): Promise<void> {
     await storage.updateSystemConfig('agent.prod_mode', enabled.toString(), updatedBy);
     this.configCache.set('agent.prod_mode', enabled.toString());
+  }
+
+  async setSimulationMode(enabled: boolean, updatedBy: string): Promise<void> {
+    await storage.updateSystemConfig('agent.simulation_mode', enabled.toString(), updatedBy);
+    this.configCache.set('agent.simulation_mode', enabled.toString());
   }
 
   // Method to invalidate cache when configuration is updated externally
