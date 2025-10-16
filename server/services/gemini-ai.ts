@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import type { AwsResource, Recommendation } from "@shared/schema";
 import { storage } from "../storage.js";
+import { pineconeService } from "./pinecone.js";
 
 export class GeminiAIService {
   private genAI: GoogleGenerativeAI;
@@ -52,7 +53,7 @@ export class GeminiAIService {
     console.log('🔄 RAG cache invalidated');
   }
 
-  // RAG: Retrieve historical context from past optimizations (Optimized with caching)
+  // RAG: Retrieve historical context from Pinecone vector database (Optimized with caching)
   private async retrieveHistoricalContext(): Promise<{
     pastRecommendations: any[];
     optimizationHistory: any[];
@@ -62,15 +63,22 @@ export class GeminiAIService {
       // Check cache first
       const now = Date.now();
       if (this.contextCache && (now - this.contextCache.timestamp) < this.CACHE_TTL) {
-        console.log('📦 Using cached RAG context (performance optimization)');
+        console.log('📦 Using cached RAG context from Pinecone (performance optimization)');
         return this.contextCache.data;
       }
 
-      // Optimized: Fetch only the last 10 records directly from database with LIMIT
-      const [pastRecommendations, optimizationHistory] = await Promise.all([
-        storage.getRecentRecommendations(10),
-        storage.getRecentOptimizationHistory(10)
-      ]);
+      // Use Pinecone for semantic search of relevant historical context
+      const query = "AWS resource optimization recommendations and execution history";
+      const relevantContext = await pineconeService.retrieveRelevantContext(query, 20);
+      
+      // Separate recommendations from optimization history
+      const pastRecommendations = relevantContext
+        .filter(ctx => ctx.type === 'recommendation')
+        .slice(0, 10);
+      
+      const optimizationHistory = relevantContext
+        .filter(ctx => ctx.type === 'optimization_history')
+        .slice(0, 10);
       
       // Calculate success patterns
       const successPatterns = this.analyzeSuccessPatterns(optimizationHistory);
@@ -87,11 +95,11 @@ export class GeminiAIService {
         timestamp: now
       };
 
-      console.log('✨ RAG context fetched and cached');
+      console.log('✨ RAG context fetched from Pinecone and cached');
       
       return result;
     } catch (error) {
-      console.error("Error retrieving historical context for RAG:", error);
+      console.error("Error retrieving historical context from Pinecone:", error);
       return {
         pastRecommendations: [],
         optimizationHistory: [],
