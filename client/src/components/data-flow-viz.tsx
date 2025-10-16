@@ -1,7 +1,38 @@
 import { Card } from "@/components/ui/card";
 import { Database, Server, Cloud, Activity, TrendingDown, CheckCircle2, DollarSign, Zap } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { formatCurrency } from "@/lib/currency";
+import type { AwsResource, Recommendation, OptimizationHistory } from "@shared/schema";
 
 export function DataFlowVisualization() {
+  const { data: resources = [] } = useQuery<AwsResource[]>({ 
+    queryKey: ['/api/aws-resources']
+  });
+  
+  const { data: recommendations = [] } = useQuery<Recommendation[]>({ 
+    queryKey: ['/api/recommendations']
+  });
+  
+  const { data: history = [] } = useQuery<OptimizationHistory[]>({ 
+    queryKey: ['/api/optimization-history']
+  });
+
+  const { data: metrics } = useQuery<{
+    monthlySpend: number;
+    identifiedSavings: number;
+    executedSavings: number;
+    activeResources: number;
+  }>({ 
+    queryKey: ['/api/dashboard/metrics']
+  });
+
+  const ec2Count = resources.filter(r => r.resourceType === 'EC2').length;
+  const rdsCount = resources.filter(r => r.resourceType === 'RDS').length;
+  const s3Count = resources.filter(r => r.resourceType === 'S3').length;
+  const activeRecommendations = recommendations.filter(r => r.status === 'pending' || r.status === 'approved').length;
+  const appliedOptimizations = history.filter(h => h.status === 'completed').length;
+  const totalResources = resources.length;
+  const totalOutputs = activeRecommendations + appliedOptimizations + (history.length > 0 ? 1 : 0);
   return (
     <Card className="p-6 bg-card border-border">
       <div className="mb-4">
@@ -23,7 +54,7 @@ export function DataFlowVisualization() {
                 <Server className="w-5 h-5 text-chart-1" />
                 <div className="flex-1">
                   <div className="text-sm font-medium text-foreground">EC2 Instances</div>
-                  <div className="text-xs text-muted-foreground">234 resources</div>
+                  <div className="text-xs text-muted-foreground">{ec2Count} resources</div>
                 </div>
               </div>
               <div className="absolute -right-4 top-1/2 -translate-y-1/2 w-4 h-0.5 bg-gradient-to-r from-chart-1 to-transparent"></div>
@@ -34,7 +65,7 @@ export function DataFlowVisualization() {
                 <Database className="w-5 h-5 text-chart-3" />
                 <div className="flex-1">
                   <div className="text-sm font-medium text-foreground">RDS Databases</div>
-                  <div className="text-xs text-muted-foreground">89 resources</div>
+                  <div className="text-xs text-muted-foreground">{rdsCount} resources</div>
                 </div>
               </div>
               <div className="absolute -right-4 top-1/2 -translate-y-1/2 w-4 h-0.5 bg-gradient-to-r from-chart-3 to-transparent"></div>
@@ -45,7 +76,7 @@ export function DataFlowVisualization() {
                 <Cloud className="w-5 h-5 text-chart-2" />
                 <div className="flex-1">
                   <div className="text-sm font-medium text-foreground">S3 Buckets</div>
-                  <div className="text-xs text-muted-foreground">156 resources</div>
+                  <div className="text-xs text-muted-foreground">{s3Count} resources</div>
                 </div>
               </div>
               <div className="absolute -right-4 top-1/2 -translate-y-1/2 w-4 h-0.5 bg-gradient-to-r from-chart-2 to-transparent"></div>
@@ -107,7 +138,7 @@ export function DataFlowVisualization() {
                 <CheckCircle2 className="w-5 h-5 text-accent" />
                 <div className="flex-1">
                   <div className="text-sm font-medium text-foreground">Recommendations</div>
-                  <div className="text-xs text-accent">47 active</div>
+                  <div className="text-xs text-accent">{activeRecommendations} active</div>
                 </div>
               </div>
             </div>
@@ -118,7 +149,7 @@ export function DataFlowVisualization() {
                 <DollarSign className="w-5 h-5 text-chart-3" />
                 <div className="flex-1">
                   <div className="text-sm font-medium text-foreground">Identified Savings</div>
-                  <div className="text-xs text-chart-3">$847.23/month</div>
+                  <div className="text-xs text-chart-3">{formatCurrency(metrics?.identifiedSavings || 0)}/month</div>
                 </div>
               </div>
             </div>
@@ -129,7 +160,7 @@ export function DataFlowVisualization() {
                 <TrendingDown className="w-5 h-5 text-chart-2" />
                 <div className="flex-1">
                   <div className="text-sm font-medium text-foreground">Auto-Optimizations</div>
-                  <div className="text-xs text-chart-2">12 applied</div>
+                  <div className="text-xs text-chart-2">{appliedOptimizations} applied</div>
                 </div>
               </div>
             </div>
@@ -184,7 +215,7 @@ export function DataFlowVisualization() {
       <div className="mt-6 pt-4 border-t border-border">
         <div className="grid grid-cols-3 gap-4 text-center">
           <div data-testid="stat-input-count">
-            <div className="text-2xl font-bold text-primary">479</div>
+            <div className="text-2xl font-bold text-primary">{totalResources}</div>
             <div className="text-xs text-muted-foreground">Resources Monitored</div>
           </div>
           <div data-testid="stat-processing-rate">
@@ -192,7 +223,7 @@ export function DataFlowVisualization() {
             <div className="text-xs text-muted-foreground">Processing Speed</div>
           </div>
           <div data-testid="stat-output-count">
-            <div className="text-2xl font-bold text-chart-3">59</div>
+            <div className="text-2xl font-bold text-chart-3">{totalOutputs}</div>
             <div className="text-xs text-muted-foreground">Active Outputs</div>
           </div>
         </div>
