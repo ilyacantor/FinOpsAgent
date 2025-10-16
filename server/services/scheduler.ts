@@ -161,6 +161,11 @@ export class SchedulerService {
     }
   }
 
+  // Public method to trigger AI analysis manually
+  public async triggerAIAnalysis() {
+    await this.analyzeWithAI();
+  }
+
   private async analyzeWithAI() {
     try {
       console.log('🤖 Starting AI-powered resource analysis with Gemini 2.5 Flash...');

@@ -473,6 +473,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Manual AI analysis trigger endpoint
+  app.post("/api/ai/analyze", async (req, res) => {
+    try {
+      console.log('🤖 Manual AI analysis triggered...');
+      
+      // Trigger AI analysis manually (useful for testing)
+      schedulerService.triggerAIAnalysis().catch(err => {
+        console.error('AI analysis error:', err);
+      });
+      
+      res.json({ 
+        success: true, 
+        message: 'AI analysis started. Check logs for progress.' 
+      });
+    } catch (error) {
+      console.error("Error triggering AI analysis:", error);
+      res.status(500).json({ error: "Failed to trigger AI analysis" });
+    }
+  });
+
   // Execute optimization function
   async function executeOptimization(recommendation: any) {
     try {
