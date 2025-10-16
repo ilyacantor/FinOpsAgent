@@ -58,6 +58,7 @@ Preferred communication style: Simple, everyday language.
 - **AWS Trusted Advisor**: Additional optimization recommendations
 
 ### Third-party Integrations
+- **Pinecone**: Vector database for RAG (Retrieval Augmented Generation) historical context storage
 - **Slack Web API**: Automated notifications for optimization opportunities and approvals
 - **AWS Support API**: Enhanced recommendation data for enterprise accounts
 
@@ -77,10 +78,12 @@ The system is optimized for maximum speed when running in AI mode with synthetic
 
 ### AI & RAG Performance
 - **Gemini 2.5 Flash**: Uses Google's fastest Gemini model for optimal AI response times
-- **Smart Caching**: 5-minute TTL cache for RAG historical context to minimize database queries
-- **Database-Level Limits**: Optimized queries fetch only required records (last 10) using SQL LIMIT
+- **Pinecone Vector Database**: Semantic search for relevant historical context using vector embeddings
+- **Smart Caching**: 5-minute TTL cache for RAG retrieval results to minimize vector database queries
+- **Text Embedding Model**: Gemini text-embedding-004 for high-quality vector representations
 - **Parallel Processing**: Independent operations run concurrently using Promise.all
 - **Auto Cache Invalidation**: Cache automatically refreshes after new recommendations are generated
+- **Automatic Vector Storage**: All recommendations and optimization history automatically stored in Pinecone
 
 ### Synthetic Data Optimization
 - **Reduced Frequency**: Data evolution runs every 30 minutes (previously 15) to reduce CPU load
@@ -88,16 +91,17 @@ The system is optimized for maximum speed when running in AI mode with synthetic
 - **Batch Operations**: Multiple resource updates processed together for better performance
 
 ### Database Optimizations
-- **Optimized Storage Methods**: 
-  - `getRecentRecommendations(limit)`: Fetches only N most recent records
-  - `getRecentOptimizationHistory(limit)`: Fetches only N most recent executions
+- **Vector-Based RAG**: Pinecone handles historical context retrieval via semantic search (no database queries for RAG)
+- **PostgreSQL for Core Data**: Primary storage for resources, recommendations, and execution history
+- **Optimized Storage Methods**: Database queries use LIMIT for efficient record fetching
 - **Indexed Queries**: All queries use database indexes for faster retrieval
 - **Minimal Data Transfer**: Only essential fields retrieved from database
 
 ### Expected Performance
-- **AI Analysis**: Sub-3-second response times with RAG context
+- **AI Analysis**: Sub-3-second response times with Pinecone RAG context
+- **Vector Search**: <200ms for semantic similarity queries in Pinecone
 - **Cache Hit Rate**: 80%+ for repeated RAG queries within 5 minutes
-- **Database Queries**: <100ms for optimized recent record fetches
+- **Database Queries**: <100ms for optimized record fetches
 - **Synthetic Data Evolution**: <500ms for full dataset update
 
 The architecture prioritizes real-time data processing, enterprise-grade security, and scalable cost optimization workflows while maintaining a clean separation between frontend presentation, backend business logic, and external service integrations.
