@@ -1,6 +1,11 @@
-const path = require("path");
-const express = require("express");
-const cors = require("cors");
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
+import express from "express";
+import cors from "cors";
+
+// ES module __dirname compatibility
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const app = express();
 app.use(cors());
@@ -38,10 +43,13 @@ app.get("/api/unified_data", (req, res) => {
 });
 
 // --- Serve your front-end files (optional if using /src) ---
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(join(__dirname, "public")));
 app.get("*", (_req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+  res.sendFile(join(__dirname, "public", "index.html"));
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+// Use PORT from environment or default to 5000 (production default)
+const PORT = parseInt(process.env.PORT || '5000', 10);
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`✅ Server running on port ${PORT}`);
+});
