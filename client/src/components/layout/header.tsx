@@ -1,5 +1,4 @@
 import { RotateCcw, Bot, Settings, Activity } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -131,7 +130,7 @@ export function Header() {
             </div>
           )}
 
-          {/* Simulation Mode Toggle */}
+          {/* Synthetic Data Toggle */}
           {agentConfig && (
             <div className="flex items-center gap-3 px-4 py-2 rounded-lg border border-purple-500/30 bg-gradient-to-r from-background to-purple-950/10">
               <div className="flex items-center gap-2">
@@ -140,13 +139,13 @@ export function Header() {
                 ) : (
                   <Activity className="w-4 h-4 text-muted-foreground" />
                 )}
-                <span className="text-sm font-medium">Simulation</span>
+                <span className="text-sm font-medium">Synthetic Data</span>
                 <Badge 
                   variant={agentConfig.simulationMode ? "default" : "secondary"} 
                   className={agentConfig.simulationMode ? "bg-purple-500" : ""}
                   data-testid="header-simulation-mode-badge"
                 >
-                  {agentConfig.simulationMode ? "ON" : "OFF"}
+                  {agentConfig.simulationMode ? "Y" : "N"}
                 </Badge>
               </div>
               <Switch
@@ -158,16 +157,6 @@ export function Header() {
               />
             </div>
           )}
-          
-          <div className="flex items-center space-x-2">
-            <Avatar className="w-8 h-8">
-              <AvatarFallback className="bg-primary text-primary-foreground text-xs font-medium">JD</AvatarFallback>
-            </Avatar>
-            <div className="text-sm">
-              <div className="font-medium text-foreground" data-testid="user-name">John Davis</div>
-              <div className="text-muted-foreground" data-testid="user-role">CFO</div>
-            </div>
-          </div>
         </div>
       </div>
     </header>
