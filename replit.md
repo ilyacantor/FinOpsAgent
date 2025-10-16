@@ -105,3 +105,45 @@ The system is optimized for maximum speed when running in AI mode with synthetic
 - **Synthetic Data Evolution**: <500ms for full dataset update
 
 The architecture prioritizes real-time data processing, enterprise-grade security, and scalable cost optimization workflows while maintaining a clean separation between frontend presentation, backend business logic, and external service integrations.
+
+## Phase 1 Prototype (/finops)
+
+A standalone lightweight prototype for DCL integration testing, separate from the main application.
+
+### Architecture
+- **Framework**: Pure Express.js (no TypeScript, no build tools)
+- **Data Source**: Mock JSON file simulating Supabase `aws_resources` table
+- **Port**: 3001 (independent from main app on port 5000)
+- **Design**: Dark background (#1B1E23) with cyan accent (#0BCAD9)
+
+### Structure
+```
+/finops/
+├── index.js              # Express.js backend server
+├── dashboard.html        # Simple static HTML UI
+├── aws_resources.json    # Mock AWS resource data (10 resources)
+├── package.json          # Node.js configuration
+└── README.md            # Prototype documentation
+```
+
+### API Endpoints
+- `GET /api/resources` - Returns all mock AWS resources
+
+### Features
+- Resource table display (ResourceId, Type, Region, Monthly Cost, Utilization)
+- Dashboard statistics (total resources, cost, utilization, regions)
+- Visual utilization bars
+- Responsive dark theme UI
+
+### Next Steps (Phase 2)
+- Migrate to Next.js with `/app/dcl` structure
+- Replace mock JSON with real Supabase table `aws_resources`
+- Implement Next.js API routes
+- Add real-time updates and advanced filtering
+
+### Running the Prototype
+```bash
+cd finops
+npm start
+```
+Access at: http://localhost:3001/dashboard.html
