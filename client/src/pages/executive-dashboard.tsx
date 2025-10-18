@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Sidebar } from "@/components/layout/sidebar";
+import { TopNav } from "@/components/layout/top-nav";
+import { useAgentConfig } from "@/hooks/use-agent-config";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -24,6 +26,7 @@ export default function ExecutiveDashboard() {
   const [selectedRegion, setSelectedRegion] = useState<string>("all");
   const [optimizationAdoption, setOptimizationAdoption] = useState([60]);
 
+  const { agentConfig, updateProdMode, updateSimulationMode } = useAgentConfig();
   const { data: resources = [] } = useQuery<any[]>({ queryKey: ["/api/aws-resources"] });
   const { data: recommendations = [] } = useQuery<any[]>({ queryKey: ["/api/recommendations"] });
   const { data: optimizationHistory = [] } = useQuery<any[]>({ queryKey: ["/api/optimization-history"] });
@@ -89,66 +92,18 @@ export default function ExecutiveDashboard() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <div className="flex-1 flex">
+      <TopNav 
+        title="Executive Dashboard"
+        lastSync="2 min ago"
+        prodMode={agentConfig?.prodMode || false}
+        syntheticData={agentConfig?.simulationMode || false}
+        onProdModeChange={updateProdMode}
+        onSyntheticDataChange={updateSimulationMode}
+      />
+      <div className="flex-1 flex pt-[60px]">
         <Sidebar />
         <main className="flex-1 overflow-hidden">
           <div className="h-full overflow-y-auto bg-[#0A0E13] text-white p-6" data-testid="executive-dashboard">
-      {/* Top Navigation Bar */}
-      <div className="mb-6 bg-[#1B1E23] rounded-lg p-4 flex items-center justify-between">
-        <div className="flex items-center gap-6">
-          <h1 className="text-2xl font-bold text-[#0BCAD9]" data-testid="dashboard-title">
-            FinOps Autopilot Executive Dashboard
-          </h1>
-          
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-400">Environment:</span>
-            <Select value={environment} onValueChange={(v) => setEnvironment(v as Environment)}>
-              <SelectTrigger className="w-32 bg-[#0A0E13] border-[#0BCAD9]/30" data-testid="select-environment">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="prod">Prod</SelectItem>
-                <SelectItem value="stage">Stage</SelectItem>
-                <SelectItem value="synthetic">Synthetic</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-400">Timeframe:</span>
-            <Select value={timeframe} onValueChange={(v) => setTimeframe(v as Timeframe)}>
-              <SelectTrigger className="w-32 bg-[#0A0E13] border-[#0BCAD9]/30" data-testid="select-timeframe">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="month">Month</SelectItem>
-                <SelectItem value="quarter">Quarter</SelectItem>
-                <SelectItem value="ytd">YTD</SelectItem>
-                <SelectItem value="annual">Annual</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-400">Region:</span>
-            <Select value={selectedRegion} onValueChange={setSelectedRegion}>
-              <SelectTrigger className="w-32 bg-[#0A0E13] border-[#0BCAD9]/30" data-testid="select-region">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Regions</SelectItem>
-                <SelectItem value="us-east-1">us-east-1</SelectItem>
-                <SelectItem value="us-west-2">us-west-2</SelectItem>
-                <SelectItem value="eu-west-1">eu-west-1</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        <div className="text-sm text-gray-400" data-testid="last-sync">
-          Last sync: {new Date().toLocaleTimeString()}
-        </div>
-      </div>
 
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList className="bg-[#1B1E23] border-[#0BCAD9]/20">
