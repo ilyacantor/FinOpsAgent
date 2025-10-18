@@ -1,6 +1,6 @@
 import { Sidebar } from "@/components/layout/sidebar";
-import { Navbar } from "@/components/layout/navbar";
-import { Header } from "@/components/layout/header";
+import { TopNav } from "@/components/layout/top-nav";
+import { useAgentConfig } from "@/hooks/use-agent-config";
 import { RecommendationsPanel } from "@/components/dashboard/recommendations-panel";
 import { ApprovalModal } from "@/components/modals/approval-modal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,6 +11,7 @@ import { AlertCircle, CheckCircle, Info, Lightbulb } from "lucide-react";
 import { formatCurrencyWithSuffix } from "@/lib/currency";
 
 export default function Recommendations() {
+  const { agentConfig, updateProdMode, updateSimulationMode } = useAgentConfig();
   const { data: recommendations, isLoading } = useQuery<Recommendation[]>({
     queryKey: ['/api/recommendations'],
     refetchInterval: 30000,
@@ -29,13 +30,17 @@ export default function Recommendations() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <Navbar />
-      
-      <div className="flex-1 flex">
+      <TopNav 
+        title="Recommendations"
+        lastSync="2 min ago"
+        prodMode={agentConfig?.prodMode || false}
+        syntheticData={agentConfig?.simulationMode || false}
+        onProdModeChange={updateProdMode}
+        onSyntheticDataChange={updateSimulationMode}
+      />
+      <div className="flex-1 flex pt-[60px]">
         <Sidebar />
-        
         <main className="flex-1 overflow-hidden">
-          <Header />
         
         <div className="p-6 h-full overflow-y-auto">
       <div className="space-y-6">

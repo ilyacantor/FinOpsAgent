@@ -1,6 +1,6 @@
 import { Sidebar } from "@/components/layout/sidebar";
-import { Navbar } from "@/components/layout/navbar";
-import { Header } from "@/components/layout/header";
+import { TopNav } from "@/components/layout/top-nav";
+import { useAgentConfig } from "@/hooks/use-agent-config";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartLine, DollarSign, TrendingDown, TrendingUp } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
@@ -21,6 +21,7 @@ interface CostTrend {
 }
 
 export default function CostAnalysis() {
+  const { agentConfig, updateProdMode, updateSimulationMode } = useAgentConfig();
   const { data: metrics, isLoading: metricsLoading } = useQuery<DashboardMetrics>({
     queryKey: ['/api/dashboard/metrics'],
     refetchInterval: 60000,
@@ -63,12 +64,17 @@ export default function CostAnalysis() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col bg-background">
-        <Navbar />
-        
-        <div className="flex-1 flex">
+        <TopNav 
+          title="Cost Analysis"
+          lastSync="Loading..."
+          prodMode={agentConfig?.prodMode || false}
+          syntheticData={agentConfig?.simulationMode || false}
+          onProdModeChange={updateProdMode}
+          onSyntheticDataChange={updateSimulationMode}
+        />
+        <div className="flex-1 flex pt-[60px]">
           <Sidebar />
           <main className="flex-1 overflow-hidden">
-            <Header />
           <div className="p-6 h-full overflow-y-auto">
             <div className="space-y-6">
               <div>
@@ -94,13 +100,17 @@ export default function CostAnalysis() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <Navbar />
-      
-      <div className="flex-1 flex">
+      <TopNav 
+        title="Cost Analysis"
+        lastSync="Just now"
+        prodMode={agentConfig?.prodMode || false}
+        syntheticData={agentConfig?.simulationMode || false}
+        onProdModeChange={updateProdMode}
+        onSyntheticDataChange={updateSimulationMode}
+      />
+      <div className="flex-1 flex pt-[60px]">
         <Sidebar />
-        
         <main className="flex-1 overflow-hidden">
-          <Header />
         
         <div className="p-6 h-full overflow-y-auto">
           <div className="space-y-6">

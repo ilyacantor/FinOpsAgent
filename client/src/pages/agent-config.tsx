@@ -11,7 +11,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { Bot, Shield, Settings, AlertTriangle, Activity } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
-import { Navbar } from "@/components/layout/navbar";
+import { TopNav } from "@/components/layout/top-nav";
+import { useAgentConfig as useAgentConfigHook } from "@/hooks/use-agent-config";
 import { Sidebar } from "@/components/layout/sidebar";
 
 interface AgentConfig {
@@ -27,6 +28,7 @@ export default function AgentConfig() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [localConfig, setLocalConfig] = useState<AgentConfig | null>(null);
+  const { agentConfig: hookConfig, updateProdMode: hookUpdateProdMode, updateSimulationMode: hookUpdateSimulationMode } = useAgentConfigHook();
 
   // Fetch current agent configuration
   const { data: agentConfig, isLoading } = useQuery<AgentConfig>({
@@ -178,12 +180,24 @@ export default function AgentConfig() {
   if (isLoading || !localConfig) {
     return (
       <div className="min-h-screen flex flex-col bg-background">
-        <Navbar />
-        <div className="p-6 space-y-6">
-          <div>
-            <h1 className="text-3xl font-bold">Agent Configuration</h1>
-            <p className="text-muted-foreground">Loading configuration...</p>
-          </div>
+        <TopNav 
+          title="Agent Config"
+          lastSync="Loading..."
+          prodMode={false}
+          syntheticData={false}
+          onProdModeChange={() => {}}
+          onSyntheticDataChange={() => {}}
+        />
+        <div className="flex-1 flex pt-[60px]">
+          <Sidebar />
+          <main className="flex-1 overflow-hidden">
+            <div className="p-6 h-full overflow-y-auto">
+              <div>
+                <h1 className="text-3xl font-bold">Agent Configuration</h1>
+                <p className="text-muted-foreground">Loading configuration...</p>
+              </div>
+            </div>
+          </main>
         </div>
       </div>
     );
@@ -191,8 +205,15 @@ export default function AgentConfig() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <Navbar />
-      <div className="flex-1 flex">
+      <TopNav 
+        title="Agent Config"
+        lastSync="1 min ago"
+        prodMode={hookConfig?.prodMode || false}
+        syntheticData={hookConfig?.simulationMode || false}
+        onProdModeChange={hookUpdateProdMode}
+        onSyntheticDataChange={hookUpdateSimulationMode}
+      />
+      <div className="flex-1 flex pt-[60px]">
         <Sidebar />
         <main className="flex-1 overflow-hidden">
           <div className="h-full overflow-y-auto p-6 space-y-6">

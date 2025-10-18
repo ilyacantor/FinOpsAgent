@@ -1,5 +1,6 @@
 import { Sidebar } from "@/components/layout/sidebar";
-import { Header } from "@/components/layout/header";
+import { TopNav } from "@/components/layout/top-nav";
+import { useAgentConfig } from "@/hooks/use-agent-config";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { Shield, AlertTriangle, CheckCircle, Users, DollarSign } from "lucide-react";
 
 export default function Governance() {
+  const { agentConfig, updateProdMode, updateSimulationMode } = useAgentConfig();
   const policies = [
     {
       id: 1,
@@ -62,14 +64,20 @@ export default function Governance() {
   ];
 
   return (
-    <div className="min-h-screen flex bg-background">
-      <Sidebar />
-      
-      <main className="flex-1 overflow-hidden">
-        <Header />
-        
-        <div className="p-6 h-full overflow-y-auto">
-      <div className="space-y-6">
+    <div className="min-h-screen flex flex-col bg-background">
+      <TopNav 
+        title="Governance"
+        lastSync="3 min ago"
+        prodMode={agentConfig?.prodMode || false}
+        syntheticData={agentConfig?.simulationMode || false}
+        onProdModeChange={updateProdMode}
+        onSyntheticDataChange={updateSimulationMode}
+      />
+      <div className="flex-1 flex pt-[60px]">
+        <Sidebar />
+        <main className="flex-1 overflow-hidden">
+          <div className="p-6 h-full overflow-y-auto">
+            <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Governance & Compliance</h1>
           <p className="text-muted-foreground">
@@ -235,9 +243,10 @@ export default function Governance() {
             </div>
           </CardContent>
         </Card>
+            </div>
           </div>
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }

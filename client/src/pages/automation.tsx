@@ -1,6 +1,6 @@
 import { Sidebar } from "@/components/layout/sidebar";
-import { Navbar } from "@/components/layout/navbar";
-import { Header } from "@/components/layout/header";
+import { TopNav } from "@/components/layout/top-nav";
+import { useAgentConfig } from "@/hooks/use-agent-config";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Cog, PlayCircle, PauseCircle, Clock, CheckCircle } from "lucide-react";
 
 export default function Automation() {
+  const { agentConfig, updateProdMode, updateSimulationMode } = useAgentConfig();
   const automationRules = [
     {
       id: 1,
@@ -49,13 +50,17 @@ export default function Automation() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <Navbar />
-      
-      <div className="flex-1 flex">
+      <TopNav 
+        title="Automation"
+        lastSync="5 min ago"
+        prodMode={agentConfig?.prodMode || false}
+        syntheticData={agentConfig?.simulationMode || false}
+        onProdModeChange={updateProdMode}
+        onSyntheticDataChange={updateSimulationMode}
+      />
+      <div className="flex-1 flex pt-[60px]">
         <Sidebar />
-        
         <main className="flex-1 overflow-hidden">
-          <Header />
         
         <div className="p-6 h-full overflow-y-auto">
       <div className="space-y-6">
