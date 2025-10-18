@@ -2,6 +2,7 @@ import { Link } from "wouter";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Bot, Cpu } from "lucide-react";
+import autonomosLogo from "@assets/MAIN LOGO TEAL DARK BG PNG_1760814802183.png";
 
 interface TopNavProps {
   lastSync?: string;
@@ -24,55 +25,17 @@ export function TopNav({
       data-testid="top-nav"
     >
       <div className="h-full flex items-center justify-between">
-        {/* Left: Logo and Brand */}
+        {/* Left: Logo */}
         <Link 
           href="/" 
-          className="flex items-center gap-3 hover:opacity-80 transition-opacity group"
+          className="hover:opacity-80 transition-opacity"
           data-testid="nav-home-link"
         >
-          {/* autonomOS Logo SVG */}
-          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center shadow-lg shadow-cyan-500/20 group-hover:shadow-cyan-500/40 transition-shadow">
-            <svg 
-              width="24" 
-              height="24" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              xmlns="http://www.w3.org/2000/svg"
-              className="text-white"
-            >
-              <path 
-                d="M12 2L2 7L12 12L22 7L12 2Z" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-                fill="currentColor"
-                fillOpacity="0.2"
-              />
-              <path 
-                d="M2 17L12 22L22 17" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-              />
-              <path 
-                d="M2 12L12 17L22 12" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-              />
-            </svg>
-          </div>
-          <div className="hidden sm:block">
-            <div className="text-white font-semibold text-lg leading-tight font-['Inter']">
-              autonomOS
-            </div>
-            <div className="text-cyan-400 text-xs leading-tight">
-              FinOps Agent
-            </div>
-          </div>
+          <img 
+            src={autonomosLogo} 
+            alt="autonomOS" 
+            className="h-8"
+          />
         </Link>
 
         {/* Right: Last Sync and Toggles */}
