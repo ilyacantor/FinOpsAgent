@@ -66,7 +66,6 @@ export default function Governance() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <TopNav 
-        title="Governance"
         lastSync="3 min ago"
         prodMode={agentConfig?.prodMode || false}
         syntheticData={agentConfig?.simulationMode || false}

@@ -4,7 +4,6 @@ import { Label } from "@/components/ui/label";
 import { Bot, Cpu } from "lucide-react";
 
 interface TopNavProps {
-  title: string;
   lastSync?: string;
   prodMode: boolean;
   syntheticData: boolean;
@@ -13,7 +12,6 @@ interface TopNavProps {
 }
 
 export function TopNav({ 
-  title, 
   lastSync = "Just now", 
   prodMode, 
   syntheticData,
@@ -77,16 +75,8 @@ export function TopNav({
           </div>
         </Link>
 
-        {/* Center: Page Title */}
-        <h1 
-          className="absolute left-1/2 transform -translate-x-1/2 text-white font-semibold text-lg font-['Inter'] hidden md:block"
-          data-testid="page-title"
-        >
-          {title}
-        </h1>
-
         {/* Right: Last Sync and Toggles */}
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4">
           {/* Last Sync */}
           <div className="hidden lg:flex flex-col items-end">
             <span className="text-xs text-gray-400">Last Sync</span>

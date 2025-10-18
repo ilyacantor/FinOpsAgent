@@ -181,7 +181,6 @@ export default function AgentConfig() {
     return (
       <div className="min-h-screen flex flex-col bg-background">
         <TopNav 
-          title="Agent Config"
           lastSync="Loading..."
           prodMode={false}
           syntheticData={false}
@@ -206,7 +205,6 @@ export default function AgentConfig() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <TopNav 
-        title="Agent Config"
         lastSync="1 min ago"
         prodMode={hookConfig?.prodMode || false}
         syntheticData={hookConfig?.simulationMode || false}

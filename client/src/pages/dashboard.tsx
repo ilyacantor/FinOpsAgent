@@ -47,7 +47,6 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <TopNav 
-        title="Dashboard"
         lastSync="Just now"
         prodMode={agentConfig?.prodMode || false}
         syntheticData={agentConfig?.simulationMode || false}

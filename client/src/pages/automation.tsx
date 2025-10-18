@@ -51,7 +51,6 @@ export default function Automation() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <TopNav 
-        title="Automation"
         lastSync="5 min ago"
         prodMode={agentConfig?.prodMode || false}
         syntheticData={agentConfig?.simulationMode || false}

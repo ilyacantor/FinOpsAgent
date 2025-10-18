@@ -65,7 +65,6 @@ export default function CostAnalysis() {
     return (
       <div className="min-h-screen flex flex-col bg-background">
         <TopNav 
-          title="Cost Analysis"
           lastSync="Loading..."
           prodMode={agentConfig?.prodMode || false}
           syntheticData={agentConfig?.simulationMode || false}
@@ -101,7 +100,6 @@ export default function CostAnalysis() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <TopNav 
-        title="Cost Analysis"
         lastSync="Just now"
         prodMode={agentConfig?.prodMode || false}
         syntheticData={agentConfig?.simulationMode || false}

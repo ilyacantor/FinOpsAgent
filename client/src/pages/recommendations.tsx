@@ -31,7 +31,6 @@ export default function Recommendations() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <TopNav 
-        title="Recommendations"
         lastSync="2 min ago"
         prodMode={agentConfig?.prodMode || false}
         syntheticData={agentConfig?.simulationMode || false}

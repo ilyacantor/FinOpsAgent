@@ -93,7 +93,6 @@ export default function ExecutiveDashboard() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <TopNav 
-        title="Executive Dashboard"
         lastSync="2 min ago"
         prodMode={agentConfig?.prodMode || false}
         syntheticData={agentConfig?.simulationMode || false}

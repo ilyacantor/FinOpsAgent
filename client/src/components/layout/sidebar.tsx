@@ -8,19 +8,7 @@ export function Sidebar() {
   
   return (
     <aside className="w-64 bg-card border-r border-border flex-shrink-0">
-      <div className="p-6">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-            <Bot className="text-primary-foreground text-lg" />
-          </div>
-          <div>
-            <h1 className="text-lg font-bold text-foreground">FinOps Autopilot</h1>
-            <p className="text-xs text-muted-foreground">Enterprise Cloud Optimization</p>
-          </div>
-        </div>
-      </div>
-      
-      <nav className="px-4 pb-4">
+      <nav className="px-4 pt-4 pb-4">
         {/* Executive Section */}
         <div className="mb-6">
           <h3 className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
