@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Sidebar } from "@/components/layout/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -87,7 +88,11 @@ export default function ExecutiveDashboard() {
   const underutilizedResources = resources.filter((r: any) => (r.utilizationMetrics?.cpuUtilization || 0) < 30);
 
   return (
-    <div className="min-h-screen bg-[#0A0E13] text-white p-6" data-testid="executive-dashboard">
+    <div className="min-h-screen flex flex-col bg-background">
+      <div className="flex-1 flex">
+        <Sidebar />
+        <main className="flex-1 overflow-hidden">
+          <div className="h-full overflow-y-auto bg-[#0A0E13] text-white p-6" data-testid="executive-dashboard">
       {/* Top Navigation Bar */}
       <div className="mb-6 bg-[#1B1E23] rounded-lg p-4 flex items-center justify-between">
         <div className="flex items-center gap-6">
@@ -465,6 +470,9 @@ export default function ExecutiveDashboard() {
           </div>
         </TabsContent>
       </Tabs>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

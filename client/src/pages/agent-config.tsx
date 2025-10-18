@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Bot, Shield, Settings, AlertTriangle, Activity } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 import { Navbar } from "@/components/layout/navbar";
+import { Sidebar } from "@/components/layout/sidebar";
 
 interface AgentConfig {
   autonomousMode: boolean;
@@ -191,7 +192,10 @@ export default function AgentConfig() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
-      <div className="p-6 space-y-6">
+      <div className="flex-1 flex">
+        <Sidebar />
+        <main className="flex-1 overflow-hidden">
+          <div className="h-full overflow-y-auto p-6 space-y-6">
       <div>
         <h1 className="text-3xl font-bold flex items-center gap-2">
           <Bot className="h-8 w-8" />
@@ -490,7 +494,9 @@ export default function AgentConfig() {
           </div>
         </CardContent>
       </Card>
-    </div>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
