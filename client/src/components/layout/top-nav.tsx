@@ -34,7 +34,7 @@ export function TopNav({
           <img 
             src={autonomosLogo} 
             alt="autonomOS" 
-            className="h-8"
+            className="h-[42px]"
           />
         </Link>
 

@@ -127,15 +127,11 @@ export default function ExecutiveDashboard() {
                 <CardTitle className="text-sm font-medium text-gray-400">Monthly AWS Spend</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-3xl font-bold text-[#0BCAD9]">{formatCurrency(monthlySpend)}</div>
-                    <div className="flex items-center gap-1 text-sm text-green-500 mt-1">
-                      <TrendingDown className="w-4 h-4" />
-                      <span>2.3% vs last month</span>
-                    </div>
+                <div className="flex flex-col justify-center">
+                  <div className="text-3xl font-bold text-[#0BCAD9]">{formatCurrency(monthlySpend)}</div>
+                  <div className="text-sm text-green-500 mt-1">
+                    2.3% vs last month
                   </div>
-                  <DollarSign className="w-8 h-8 text-[#0BCAD9]/50" />
                 </div>
               </CardContent>
             </Card>
@@ -145,15 +141,11 @@ export default function ExecutiveDashboard() {
                 <CardTitle className="text-sm font-medium text-gray-400">Identified Savings (Annual)</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-3xl font-bold text-green-500">{formatCurrency(identifiedSavings * 12)}</div>
-                    <div className="flex items-center gap-1 text-sm text-[#0BCAD9] mt-1">
-                      <Target className="w-4 h-4" />
-                      <span>{recommendations.length} opportunities</span>
-                    </div>
+                <div className="flex flex-col justify-center">
+                  <div className="text-3xl font-bold text-green-500">{formatCurrency(identifiedSavings * 12)}</div>
+                  <div className="text-sm text-[#0BCAD9] mt-1">
+                    {recommendations.length} opportunities
                   </div>
-                  <TrendingUp className="w-8 h-8 text-green-500/50" />
                 </div>
               </CardContent>
             </Card>
@@ -163,15 +155,11 @@ export default function ExecutiveDashboard() {
                 <CardTitle className="text-sm font-medium text-gray-400">Realized Savings YTD</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-3xl font-bold text-[#0BCAD9]">{formatCurrency(realizedSavings)}</div>
-                    <div className="flex items-center gap-1 text-sm text-gray-400 mt-1">
-                      <CheckCircle className="w-4 h-4" />
-                      <span>{optimizationHistory.filter((h: any) => h.status === 'success').length} executed</span>
-                    </div>
+                <div className="flex flex-col justify-center">
+                  <div className="text-3xl font-bold text-[#0BCAD9]">{formatCurrency(realizedSavings)}</div>
+                  <div className="text-sm text-gray-400 mt-1">
+                    {optimizationHistory.filter((h: any) => h.status === 'success').length} executed
                   </div>
-                  <CheckCircle className="w-8 h-8 text-[#0BCAD9]/50" />
                 </div>
               </CardContent>
             </Card>
@@ -181,15 +169,11 @@ export default function ExecutiveDashboard() {
                 <CardTitle className="text-sm font-medium text-gray-400">Waste % (Inefficient Spend)</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-3xl font-bold text-orange-500">{wastePercent}%</div>
-                    <div className="flex items-center gap-1 text-sm text-gray-400 mt-1">
-                      <AlertTriangle className="w-4 h-4" />
-                      <span>Can be optimized</span>
-                    </div>
+                <div className="flex flex-col justify-center">
+                  <div className="text-3xl font-bold text-orange-500">{wastePercent}%</div>
+                  <div className="text-sm text-gray-400 mt-1">
+                    Can be optimized
                   </div>
-                  <AlertTriangle className="w-8 h-8 text-orange-500/50" />
                 </div>
               </CardContent>
             </Card>
