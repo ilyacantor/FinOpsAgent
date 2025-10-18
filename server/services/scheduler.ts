@@ -125,9 +125,9 @@ export class SchedulerService {
                 nodeType: analysis.recommendation.recommendedNodeType,
                 numberOfNodes: analysis.recommendation.recommendedNodes
               },
-              projectedMonthlySavings: analysis.recommendation.projectedSavings.monthly.toString(),
-              projectedAnnualSavings: analysis.recommendation.projectedSavings.annual.toString(),
-              riskLevel: analysis.recommendation.avgUtilization < 25 ? '5' : '10'
+              projectedMonthlySavings: Number(analysis.recommendation.projectedSavings.monthly),
+              projectedAnnualSavings: Number(analysis.recommendation.projectedSavings.annual),
+              riskLevel: analysis.recommendation.avgUtilization < 25 ? 5 : 10
             });
 
             // Check if we can execute autonomously
@@ -147,7 +147,7 @@ export class SchedulerService {
                 await sendOptimizationComplete({
                   title: `[AUTONOMOUS] ${recommendation.title}`,
                   resourceId: recommendation.resourceId,
-                  actualSavings: Number(recommendation.projectedMonthlySavings),
+                  actualSavings: recommendation.projectedMonthlySavings,
                   status: 'success'
                 });
 
@@ -182,8 +182,8 @@ export class SchedulerService {
                 title: recommendation.title,
                 description: recommendation.description,
                 resourceId: recommendation.resourceId,
-                projectedMonthlySavings: Number(recommendation.projectedMonthlySavings),
-                projectedAnnualSavings: Number(recommendation.projectedAnnualSavings),
+                projectedMonthlySavings: recommendation.projectedMonthlySavings,
+                projectedAnnualSavings: recommendation.projectedAnnualSavings,
                 priority: recommendation.priority,
                 recommendationId: recommendation.id
               });
@@ -205,7 +205,7 @@ export class SchedulerService {
             avgCpuUtilization: analysis.utilization
           },
           monthlyCost: analysis.recommendation?.projectedSavings ? 
-            (analysis.recommendation.projectedSavings.monthly + Number(analysis.recommendation.projectedSavings.monthly)).toString() : 
+            (analysis.recommendation.projectedSavings.monthly * 2) : 
             undefined
         });
       }
@@ -271,7 +271,7 @@ export class SchedulerService {
               await sendOptimizationComplete({
                 title: `[AI AUTONOMOUS] ${recommendation.title}`,
                 resourceId: recommendation.resourceId,
-                actualSavings: Number(recommendation.projectedMonthlySavings),
+                actualSavings: recommendation.projectedMonthlySavings,
                 status: 'success'
               });
 
@@ -298,8 +298,8 @@ export class SchedulerService {
               title: `[AI] ${recommendation.title}`,
               description: recommendation.description,
               resourceId: recommendation.resourceId,
-              projectedMonthlySavings: Number(recommendation.projectedMonthlySavings),
-              projectedAnnualSavings: Number(recommendation.projectedAnnualSavings),
+              projectedMonthlySavings: recommendation.projectedMonthlySavings,
+              projectedAnnualSavings: recommendation.projectedAnnualSavings,
               priority: recommendation.priority,
               recommendationId: recommendation.id
             });
@@ -340,7 +340,7 @@ export class SchedulerService {
             await storage.createCostReport({
               reportDate,
               serviceCategory: service,
-              cost: cost.toString(),
+              cost: Math.round(cost * 1000), // Convert to integer (cents * 10)
               usage: usage.toString(),
               usageType: group.Metrics?.UsageQuantity?.Unit || 'Unknown',
               region: 'us-east-1' // Default region

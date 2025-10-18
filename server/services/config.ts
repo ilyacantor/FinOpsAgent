@@ -114,8 +114,8 @@ export class ConfigService {
 
   async canExecuteAutonomously(recommendation: {
     type: string;
-    riskLevel: string;
-    projectedAnnualSavings: string;
+    riskLevel: number;
+    projectedAnnualSavings: number;
   }): Promise<boolean> {
     const config = await this.getAgentConfig();
     
@@ -125,14 +125,12 @@ export class ConfigService {
     }
 
     // Check risk level
-    const riskLevel = parseFloat(recommendation.riskLevel);
-    if (riskLevel > config.maxAutonomousRiskLevel) {
+    if (recommendation.riskLevel > config.maxAutonomousRiskLevel) {
       return false;
     }
 
     // Check savings threshold
-    const annualSavings = parseFloat(recommendation.projectedAnnualSavings);
-    if (annualSavings > config.approvalRequiredAboveSavings) {
+    if (recommendation.projectedAnnualSavings > config.approvalRequiredAboveSavings) {
       return false;
     }
 

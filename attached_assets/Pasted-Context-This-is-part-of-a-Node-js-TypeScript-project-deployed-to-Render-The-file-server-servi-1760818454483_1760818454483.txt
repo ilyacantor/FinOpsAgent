@@ -1,0 +1,48 @@
+Context:
+This is part of a Node.js + TypeScript project deployed to Render. 
+The file server/services/scheduler.ts handles AWS resource analysis and autonomous optimization recommendations. 
+Render's build is failing because of TypeScript errors like:
+“Type 'string' is not assignable to type 'number'” 
+and 
+“Type 'number' is not assignable to type 'string'”.
+
+The mismatches happen where projected savings, risk level, and actual savings are defined and passed through Slack notifications, recommendations, and database writes.
+
+Goal:
+Fix only the string/number type mismatches without changing logic, flow, or variable names.
+
+Instructions:
+In server/services/scheduler.ts, make the following targeted fixes:
+
+1. Around lines 128–130, replace:
+   projectedMonthlySavings: analysis.recommendation.projectedSavings.monthly.toString(),
+   projectedAnnualSavings: analysis.recommendation.projectedSavings.annual.toString(),
+   riskLevel: analysis.recommendation.avgUtilization < 25 ? '5' : '10'
+
+   with:
+   projectedMonthlySavings: Number(analysis.recommendation.projectedSavings.monthly),
+   projectedAnnualSavings: Number(analysis.recommendation.projectedSavings.annual),
+   riskLevel: analysis.recommendation.avgUtilization < 25 ? 5 : 10
+
+2. Around line 139, inside sendOptimizationComplete, change:
+   actualSavings: Number(recommendation.projectedMonthlySavings),
+   → actualSavings: recommendation.projectedMonthlySavings,
+
+3. Around lines 166–170, inside sendOptimizationRecommendation, change:
+   projectedMonthlySavings: Number(recommendation.projectedMonthlySavings),
+   projectedAnnualSavings: Number(recommendation.projectedAnnualSavings),
+   → projectedMonthlySavings: recommendation.projectedMonthlySavings,
+   projectedAnnualSavings: recommendation.projectedAnnualSavings,
+
+4. Around lines 208–211, inside storage.createAwsResource, replace:
+   monthlyCost: analysis.recommendation?.projectedSavings ?
+     (analysis.recommendation.projectedSavings.monthly + Number(analysis.recommendation.projectedSavings.monthly)).toString() :
+     undefined
+
+   with:
+   monthlyCost: analysis.recommendation?.projectedSavings ?
+     (analysis.recommendation.projectedSavings.monthly * 2).toString() :
+     undefined
+
+Make no other edits or refactors.
+Preserve indentation, comments, and formatting.
