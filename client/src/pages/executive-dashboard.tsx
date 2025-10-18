@@ -103,6 +103,12 @@ export default function ExecutiveDashboard() {
         <Sidebar />
         <main className="flex-1 overflow-hidden">
           <div className="h-full overflow-y-auto bg-[#0A0E13] text-white p-6" data-testid="executive-dashboard">
+            <div className="mb-6">
+              <h1 className="text-3xl font-bold tracking-tight">Executive Dashboard</h1>
+              <p className="text-gray-400 mt-1">
+                Comprehensive financial overview and cost optimization insights
+              </p>
+            </div>
 
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList className="bg-[#1B1E23] border-[#0BCAD9]/20">
