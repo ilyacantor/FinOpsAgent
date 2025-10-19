@@ -353,7 +353,7 @@ export class DataGenerator {
         }),
         projectedMonthlySavings: 250560, // $250.56 * 1000
         projectedAnnualSavings: 250560 * 12, // $250.56 * 12 * 1000
-        riskLevel: '15.5',
+        riskLevel: 16,
         status: 'pending'
       });
     }
@@ -380,7 +380,7 @@ export class DataGenerator {
         }),
         projectedMonthlySavings: 17210, // $17.21 * 1000
         projectedAnnualSavings: 17210 * 12, // $17.21 * 12 * 1000
-        riskLevel: '5.0',
+        riskLevel: 5,
         status: 'pending'
       });
     }
@@ -406,7 +406,7 @@ export class DataGenerator {
         }),
         projectedMonthlySavings: 73680, // $73.68 * 1000
         projectedAnnualSavings: 73680 * 12, // $73.68 * 12 * 1000
-        riskLevel: '2.5',
+        riskLevel: 3,
         status: 'pending'
       });
     }
@@ -442,7 +442,7 @@ export class DataGenerator {
         }),
         projectedMonthlySavings: Math.round(potentialSavings * 1000), // Multiply by 1000, no pennies
         projectedAnnualSavings: Math.round(potentialSavings * 12 * 1000), // Annual * 1000
-        riskLevel: '8.0',
+        riskLevel: 8,
         status: 'pending'
       });
     }
@@ -469,7 +469,7 @@ export class DataGenerator {
         }),
         projectedMonthlySavings: 63180, // $63.18 * 1000
         projectedAnnualSavings: 63180 * 12, // $63.18 * 12 * 1000
-        riskLevel: '12.0',
+        riskLevel: 12,
         status: 'pending'
       });
     }
