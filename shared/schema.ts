@@ -48,6 +48,7 @@ export const recommendations = pgTable("recommendations", {
   projectedMonthlySavings: integer("projected_monthly_savings").notNull(), // Multiplied by 1000, no pennies
   projectedAnnualSavings: integer("projected_annual_savings").notNull(), // Multiplied by 1000, no pennies
   riskLevel: integer("risk_level").notNull(), // percentage value 1-100
+  executionMode: text("execution_mode").notNull().default("autonomous"), // autonomous, hitl
   status: text("status").notNull().default("pending"), // pending, approved, rejected, executed
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),

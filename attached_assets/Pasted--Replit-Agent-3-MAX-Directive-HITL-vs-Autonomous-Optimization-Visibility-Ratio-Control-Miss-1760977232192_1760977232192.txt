@@ -1,0 +1,79 @@
+🧠 Replit Agent 3 (MAX) Directive — HITL vs Autonomous Optimization Visibility & Ratio Control
+
+Mission:
+Introduce explicit labeling and metrics for Autonomous vs HITL optimizations and maintain a target ratio of ~80 % autonomous : 20 % HITL for realism and optics.
+Do not hard-code file paths — reason from the existing codebase and preserve data integrity.
+
+🎯 Objectives
+
+Classification & Tagging
+
+Every recommendation must carry a field or flag:
+
+{ "executionMode": "autonomous" | "hitl" }
+
+
+Display this visibly in both dashboards:
+
+Autonomous → green “Auto-Optimized” badge ✅
+
+HITL → amber “Awaiting Approval” badge 🕒
+
+Include a small summary line such as:
+
+“8 auto-executed / 2 awaiting approval (last 10 optimizations)”
+
+Ratio Control Logic
+
+Default target ≈ 80 % autonomous : 20 % HITL.
+
+Adjust risk assignment probabilities accordingly:
+
+low risk ≈ 80 % → autonomous
+
+medium/high risk ≈ 20 % → HITL
+
+Allow slight random variation (±5 %) to look natural.
+
+Dashboard Metrics
+
+Add a compact widget or footer row:
+
+Optimization Mix: 82 % Autonomous  |  18 % HITL
+
+
+Update dynamically every 15 s with simulation refresh.
+
+HITL Queue Display
+
+List pending (HITL) items separately with “Approve / Reject” controls.
+
+Approval instantly moves item to executed state and updates Realized Savings YTD.
+
+Reporting / Telemetry
+
+Extend AI Mode History and logs with summary counts:
+
+Cycle 142 → 3 new recommendations (2 Auto, 1 HITL)
+
+
+Ensure API endpoint /api/recommendations returns executionMode for each entry.
+
+Safety
+
+Preserve all existing heuristic/AI behaviors, timers, and storage.
+
+Do not break Pinecone vector schema or DB migrations; add columns safely if missing.
+
+🪩 Success Criteria
+
+Each recommendation clearly labeled Autonomous or HITL in UI.
+
+Mix ratio hovers around 80 / 20 over time.
+
+“Optimization Mix” metric visible on dashboards.
+
+Logs and history confirm both categories appear regularly.
+
+Commit message:
+feat: HITL vs Autonomous labeling + 80/20 execution mix with dashboard reporting

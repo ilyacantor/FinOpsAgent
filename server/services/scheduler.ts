@@ -481,6 +481,8 @@ export class SchedulerService {
       let newRecommendationsCount = 0;
       let totalSavings = 0;
       let autoOptimizedCount = 0;
+      let autonomousCount = 0;
+      let hitlCount = 0;
       
       for (const resource of selectedResources) {
         // Check if we already have a pending recommendation for this resource
@@ -495,7 +497,12 @@ export class SchedulerService {
         
         // Generate synthetic recommendation
         const recType = ['rightsizing', 'scheduling', 'storage-tiering'][Math.floor(Math.random() * 3)] as any;
-        const riskLevel = Math.random() < 0.6 ? 'low' : (Math.random() < 0.7 ? 'medium' : 'high');
+        
+        // 80% autonomous (low-risk) / 20% HITL (medium+high risk) distribution
+        const riskRandom = Math.random();
+        const riskLevel = riskRandom < 0.80 ? 'low' : (riskRandom < 0.90 ? 'medium' : 'high');
+        const executionMode = riskLevel === 'low' ? 'autonomous' : 'hitl';
+        
         const monthlySavings = Math.floor(Math.random() * 275) + 25; // $25-$300
         const annualSavings = monthlySavings * 12;
         
@@ -514,20 +521,28 @@ export class SchedulerService {
           recommendedConfig: this.generateRecommendedConfig(recType, resource),
           projectedMonthlySavings: monthlySavings,
           projectedAnnualSavings: annualSavings,
-          riskLevel: riskLevel === 'low' ? 3 : (riskLevel === 'medium' ? 7 : 9)
+          riskLevel: riskLevel === 'low' ? 3 : (riskLevel === 'medium' ? 7 : 9),
+          executionMode: executionMode
         });
         
         newRecommendationsCount++;
         totalSavings += annualSavings;
         
-        // Auto-optimize low-risk recommendations
-        if (riskLevel === 'low') {
+        // Count autonomous vs HITL
+        if (executionMode === 'autonomous') {
+          autonomousCount++;
+        } else {
+          hitlCount++;
+        }
+        
+        // Auto-optimize autonomous recommendations (low-risk)
+        if (executionMode === 'autonomous') {
           try {
             await this.executeSyntheticOptimization(recommendation);
             await storage.updateRecommendationStatus(recommendation.id, 'executed');
             autoOptimizedCount++;
             
-            console.log(`✅ Auto-executed: ${recommendation.title} (${riskLevel} risk)`);
+            console.log(`✅ Auto-executed: ${recommendation.title} (autonomous)`);
           } catch (error) {
             console.error(`❌ Auto-execution failed for ${recommendation.id}:`, error);
             await storage.updateRecommendationStatus(recommendation.id, 'failed');
@@ -536,7 +551,7 @@ export class SchedulerService {
       }
       
       if (newRecommendationsCount > 0) {
-        console.log(`💡 New Recommendations Generated (${newRecommendationsCount})`);
+        console.log(`💡 Cycle ${this.simulationCycleCount} → ${newRecommendationsCount} new recommendation${newRecommendationsCount > 1 ? 's' : ''} (${autonomousCount} Autonomous, ${hitlCount} HITL)`);
         console.log(`💰 Total Potential Savings: $${totalSavings.toLocaleString()}/year`);
         if (autoOptimizedCount > 0) {
           console.log(`✅ ${autoOptimizedCount} Auto-Optimization${autoOptimizedCount > 1 ? 's' : ''} Applied`);
