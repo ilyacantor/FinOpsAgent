@@ -19,32 +19,23 @@ export function formatCurrencyWithSuffix(value: number | string | null | undefin
   return `${formatted}${suffix}`;
 }
 
-// For chart formatting where we want to show values in K format
-export function formatCurrencyK(value: number): string {
-  // Value is already scaled by 1000, so divide by 1000 first, then by 1000 again for K format
-  const dollarAmount = value / 1000;
-  return `$${(dollarAmount / 1000).toFixed(0)}K`;
-}
-
-// Compact formatting for enterprise-scale values (no decimals, clean K/M suffix)
-export function formatCurrencyCompact(value: number | string | null | undefined): string {
+// Global currency formatter - displays all values in thousands (K-scale) with no decimals
+// This is the primary formatter for all monetary values throughout the application
+export function formatCurrencyK(value: number | string | null | undefined): string {
   if (value === null || value === undefined) {
-    return '$0';
+    return '$0 K';
   }
   
   // Convert to number and divide by 1000 to get original dollar amount
   const numValue = typeof value === 'string' ? parseInt(value) : value;
   const dollarAmount = numValue / 1000;
   
-  // Format in compact notation
-  if (dollarAmount >= 1000000) {
-    // Millions: $1.3M
-    return `$${(dollarAmount / 1000000).toFixed(1)}M`;
-  } else if (dollarAmount >= 1000) {
-    // Thousands: $260K
-    return `$${Math.round(dollarAmount / 1000)}K`;
-  } else {
-    // Less than 1000: $500
-    return `$${Math.round(dollarAmount)}`;
-  }
+  // Convert to thousands and round to nearest integer
+  const thousands = Math.round(dollarAmount / 1000);
+  
+  // Format with thousands separators
+  return `$${thousands.toLocaleString()} K`;
 }
+
+// Legacy: Keep formatCurrencyCompact as an alias to formatCurrencyK for backward compatibility
+export const formatCurrencyCompact = formatCurrencyK;

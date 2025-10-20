@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AlertCircle, Info, CheckCircle, ExternalLink, CheckCheck } from "lucide-react";
-import { formatCurrencyWithSuffix, formatCurrency } from "@/lib/currency";
+import { formatCurrencyK } from "@/lib/currency";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -27,7 +27,7 @@ export function RecommendationsPanel() {
     },
     onSuccess: (data: any) => {
       const totalSavings = data.totalAnnualSavings || 0;
-      const formattedSavings = formatCurrency(totalSavings);
+      const formattedSavings = formatCurrencyK(totalSavings);
       
       toast({
         title: "Bulk Approval Successful",
@@ -177,7 +177,7 @@ export function RecommendationsPanel() {
                     )}
                   </div>
                   <Badge variant="outline" data-testid={`savings-badge-${index}`}>
-                    {formatCurrencyWithSuffix(recommendation.projectedAnnualSavings, '/year')}
+                    {formatCurrencyK(recommendation.projectedAnnualSavings)}/year
                   </Badge>
                 </div>
                 
@@ -196,7 +196,7 @@ export function RecommendationsPanel() {
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Monthly Savings:</span>
                     <span className="font-bold text-accent" data-testid={`monthly-savings-${index}`}>
-                      {formatCurrency(recommendation.projectedMonthlySavings)}
+                      {formatCurrencyK(recommendation.projectedMonthlySavings)}
                     </span>
                   </div>
                   <div className="flex justify-between">

@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Zap, CheckCircle2, XCircle, Clock } from "lucide-react";
+import { formatCurrencyK } from "@/lib/currency";
 
 interface AiModeHistoryEntry {
   id: string;
@@ -115,7 +116,7 @@ export function AiModeHistory() {
                       {entry.status === 'success' && entry.recommendationsGenerated !== undefined && (
                         <p className="text-xs text-cyan-400 mt-1">
                           {entry.recommendationsGenerated} recommendations • 
-                          ${((entry.totalSavingsIdentified || 0) / 1000).toFixed(1)}K savings
+                          {formatCurrencyK(entry.totalSavingsIdentified || 0)} savings
                         </p>
                       )}
                       {entry.status === 'failed' && entry.errorMessage && (

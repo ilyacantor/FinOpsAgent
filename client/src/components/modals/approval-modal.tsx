@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, X, User } from "lucide-react";
-import { formatCurrency } from "@/lib/currency";
+import { formatCurrencyK } from "@/lib/currency";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
 import { apiRequest } from "@/lib/queryClient";
@@ -132,7 +132,7 @@ export function ApprovalModal() {
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Monthly Cost:</span>
                   <span className="font-medium" data-testid="current-monthly-cost">
-                    {formatCurrency(recommendation.projectedMonthlySavings + 7560000)}
+                    {formatCurrencyK(recommendation.projectedMonthlySavings + 7560000)}
                   </span>
                 </div>
                 {currentConfig.utilization && (
@@ -157,7 +157,7 @@ export function ApprovalModal() {
                 )}
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Monthly Cost:</span>
-                  <span className="font-medium text-accent" data-testid="recommended-monthly-cost">{formatCurrency(7560000)}</span>
+                  <span className="font-medium text-accent" data-testid="recommended-monthly-cost">{formatCurrencyK(7560000)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Expected Utilization:</span>
@@ -173,13 +173,13 @@ export function ApprovalModal() {
               <div>
                 <span className="text-muted-foreground">Monthly Savings:</span>
                 <span className="font-bold text-accent ml-2" data-testid="monthly-savings">
-                  {formatCurrency(recommendation.projectedMonthlySavings)}
+                  {formatCurrencyK(recommendation.projectedMonthlySavings)}
                 </span>
               </div>
               <div>
                 <span className="text-muted-foreground">Annual Savings:</span>
                 <span className="font-bold text-accent ml-2" data-testid="annual-savings">
-                  {formatCurrency(recommendation.projectedAnnualSavings)}
+                  {formatCurrencyK(recommendation.projectedAnnualSavings)}
                 </span>
               </div>
               <div>

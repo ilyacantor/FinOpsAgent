@@ -1,0 +1,87 @@
+🧠 Replit Agent 3 (MAX) Directive — Global Currency Normalization
+
+Mission:
+Standardize all monetary values throughout FinOps Autopilot to display in thousands (K-scale) with no decimal digits, across every module and chart.
+You know the codebase best — reason through all components and formatters before modifying.
+
+🎯 Objectives
+
+Universal Thousand-Scale Display
+
+Every place any monetary value is shown — dashboards, cost tab, recommendations, charts, tables, tooltips, notifications, Slack messages — must display as thousands.
+
+Example mappings:
+
+Before	After
+$1 234.56	$1 K
+$12 345.67	$12 K
+$1 234 567.89	$1 235 K
+
+No Decimals Anywhere
+
+Remove any toFixed(2) or similar 2-decimal rendering.
+
+Round to nearest integer (thousand units).
+
+Never show pennies.
+
+Formatting Function
+
+Create / update a single shared helper, e.g. formatCurrencyK(value):
+
+export const formatCurrencyK = (value: number) =>
+  `$${Math.round(value / 1000).toLocaleString()} K`;
+
+
+Replace all other currency formatting calls with this helper (or adjust global formatter in the util library).
+
+Charts & Axes
+
+Adjust Y-axis labels to show “K” suffixes (or compact $1.2 M where applicable).
+
+Ensure tooltips and legend entries also use the helper, not raw values.
+
+Backend API Responses
+
+Do not change numeric precision in storage.
+
+Keep full values internally; scale only in presentation layer.
+
+Ensure all APIs consistently return numeric (not string) types.
+
+Audit Coverage
+
+Verify normalization across:
+
+Executive Dashboard
+
+Operations Dashboard
+
+Cost Tab / Cost Trends
+
+Recommendation lists + detail views
+
+Slack notifications
+
+AI Mode History
+
+Charts (Spend, Savings, Waste %)
+
+Logging Example
+
+💰 Global currency normalization applied — all values in thousands (no decimals)
+✅ Updated formatCurrencyK()
+✅ All cost/savings charts verified
+
+🪩 Success Criteria
+
+No decimals or pennies anywhere.
+
+All currency values end in “K”.
+
+Charts, KPIs, and notifications show consistent thousand-scale values.
+
+No double-scaling or data corruption.
+
+Commit message:
+chore: global currency normalization (thousand-scale, no decimals, unified formatter)

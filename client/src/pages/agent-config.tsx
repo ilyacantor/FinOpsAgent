@@ -10,7 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { Bot, Shield, Settings, AlertTriangle, Activity } from "lucide-react";
-import { formatCurrency } from "@/lib/currency";
+import { formatCurrencyK } from "@/lib/currency";
 import { TopNav } from "@/components/layout/top-nav";
 import { useAgentConfig as useAgentConfigHook } from "@/hooks/use-agent-config";
 import { Sidebar } from "@/components/layout/sidebar";
@@ -429,7 +429,7 @@ export default function AgentConfig() {
             <div className="flex items-center gap-4">
               <Input
                 type="text"
-                value={formatCurrency(localConfig.approvalRequiredAboveSavings)}
+                value={formatCurrencyK(localConfig.approvalRequiredAboveSavings)}
                 readOnly
                 className="w-48"
                 data-testid="savings-threshold-input"
@@ -503,7 +503,7 @@ export default function AgentConfig() {
             <div>
               <p className="font-medium">Approval Threshold</p>
               <p className="text-muted-foreground">
-                {formatCurrency(localConfig.approvalRequiredAboveSavings)}/year
+                {formatCurrencyK(localConfig.approvalRequiredAboveSavings)}/year
               </p>
             </div>
             <div>
