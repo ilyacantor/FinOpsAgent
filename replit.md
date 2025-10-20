@@ -182,8 +182,10 @@ The system is optimized for maximum speed when running in AI mode with synthetic
 - **Coverage**: Applied to all dashboards, charts, tooltips, recommendations, modals, and notifications
 
 ### Database Optimizations
+- **BIGINT Schema for Enterprise Scale**: All monetary fields (monthlyCost, projectedMonthlySavings, actualSavings, etc.) use BIGINT with `{ mode: "number" }` to support values exceeding 2.1B limit, accommodating 10× multiplier without overflow
 - **Vector-Based RAG**: Pinecone handles historical context retrieval via semantic search (no database queries for RAG)
 - **PostgreSQL for Core Data**: Primary storage for resources, recommendations, and execution history
+- **Metrics Fallback Architecture**: `getMetricsSummary()` implements intelligent fallback—prefers `cost_reports` when available, bootstraps from `aws_resources.monthlyCost` aggregation when empty (demo mode)
 - **Optimized Storage Methods**: Database queries use LIMIT for efficient record fetching
 - **Indexed Queries**: All queries use database indexes for faster retrieval
 - **Minimal Data Transfer**: Only essential fields retrieved from database
