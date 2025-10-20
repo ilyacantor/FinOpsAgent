@@ -14,7 +14,7 @@ interface OptimizationMixData {
 export function OptimizationMix() {
   const { data: mixData, isLoading } = useQuery<OptimizationMixData>({
     queryKey: ['/api/metrics/optimization-mix'],
-    refetchInterval: 10000, // Auto-refresh every 10 seconds
+    refetchInterval: 3000, // Auto-refresh every 3 seconds
   });
 
   if (isLoading) {

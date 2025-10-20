@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
+import { formatCurrencyCompact as formatCurrency } from "@/lib/currency";
 import {
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, 
   Tooltip, Legend, ResponsiveContainer, AreaChart, Area
@@ -34,10 +35,10 @@ export default function ExecutiveDashboard() {
   const { data: recommendations = [] } = useQuery<any[]>({ queryKey: ["/api/recommendations"] });
   const { data: optimizationHistory = [] } = useQuery<any[]>({ queryKey: ["/api/optimization-history"] });
   
-  // Use the new metrics summary endpoint with 5s refresh for real-time feel
+  // Use the new metrics summary endpoint with 3s refresh for real-time feel
   const { data: metricsSummary } = useQuery<any>({ 
     queryKey: ["/api/metrics/summary"],
-    refetchInterval: 5000 
+    refetchInterval: 3000 
   });
 
   // Calculate metrics
@@ -81,14 +82,6 @@ export default function ExecutiveDashboard() {
     { range: "80-100%", count: resources.filter((r: any) => (r.utilizationMetrics?.cpuUtilization || 0) >= 80).length },
   ];
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', { 
-      style: 'currency', 
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(value / 1000);
-  };
 
   const avgUtilization = resources.length > 0
     ? resources.reduce((sum: number, r: any) => sum + (r.utilizationMetrics?.cpuUtilization || 0), 0) / resources.length
