@@ -40,7 +40,8 @@ export class SchedulerService {
   }
 
   private startContinuousSimulation() {
-    console.log('✅ Continuous simulation loop active (5s interval)');
+    console.log('⚡ Demo Mode Active — 3s scan interval');
+    console.log('💰 Scaling ×10 applied at data source');
     
     this.continuousSimulationInterval = setInterval(async () => {
       // Guard against overlapping executions
@@ -58,17 +59,15 @@ export class SchedulerService {
           // Increment cycle counter
           this.simulationCycleCount++;
           
-          // Generate heuristic recommendations every 3 cycles (~15 seconds)
-          if (this.simulationCycleCount % 3 === 0) {
-            await this.generateHeuristicRecommendations();
-          }
+          // Generate heuristic recommendations every cycle (3s)
+          await this.generateHeuristicRecommendations();
         }
       } catch (error) {
         console.error('Error in continuous simulation loop:', error);
       } finally {
         this.isSimulationRunning = false;
       }
-    }, 5000);
+    }, 3000);
   }
 
   private initializeScheduledTasks() {
@@ -468,9 +467,9 @@ export class SchedulerService {
         return;
       }
       
-      // Generate 1-3 recommendations per cycle
+      // Generate 2-5 recommendations per cycle
       const numRecommendations = Math.min(
-        Math.floor(Math.random() * 3) + 1, // 1-3 recommendations
+        Math.floor(Math.random() * 4) + 2, // 2-5 recommendations
         wastefulResources.length
       );
       
@@ -503,7 +502,7 @@ export class SchedulerService {
         const riskLevel = riskRandom < 0.80 ? 'low' : (riskRandom < 0.90 ? 'medium' : 'high');
         const executionMode = riskLevel === 'low' ? 'autonomous' : 'hitl';
         
-        const monthlySavings = Math.floor(Math.random() * 275) + 25; // $25-$300
+        const monthlySavings = Math.floor(Math.random() * 2750) + 250; // $250-$3000 (×10 scaling)
         const annualSavings = monthlySavings * 12;
         
         const metrics = resource.utilizationMetrics as any;
@@ -551,10 +550,12 @@ export class SchedulerService {
       }
       
       if (newRecommendationsCount > 0) {
-        console.log(`💡 Cycle ${this.simulationCycleCount} → ${newRecommendationsCount} new recommendation${newRecommendationsCount > 1 ? 's' : ''} (${autonomousCount} Autonomous, ${hitlCount} HITL)`);
-        console.log(`💰 Total Potential Savings: $${totalSavings.toLocaleString()}/year`);
+        console.log(`💡 ${newRecommendationsCount} Recommendation${newRecommendationsCount > 1 ? 's' : ''} (${autonomousCount} Auto | ${hitlCount} HITL)`);
         if (autoOptimizedCount > 0) {
-          console.log(`✅ ${autoOptimizedCount} Auto-Optimization${autoOptimizedCount > 1 ? 's' : ''} Applied`);
+          console.log(`✅ ${autoOptimizedCount} Auto-Optimization${autoOptimizedCount > 1 ? 's' : ''} Executed`);
+        }
+        if (hitlCount > 0) {
+          console.log(`🕒 ${hitlCount} HITL Pending Approval`);
         }
       }
     } catch (error) {

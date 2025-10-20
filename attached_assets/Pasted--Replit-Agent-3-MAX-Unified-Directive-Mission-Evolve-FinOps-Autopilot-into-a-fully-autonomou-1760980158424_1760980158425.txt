@@ -1,0 +1,111 @@
+🧠 Replit Agent 3 (MAX) — Unified Directive
+
+Mission:
+Evolve FinOps Autopilot into a fully autonomous, enterprise-grade demo platform that feels alive in real time.
+You know the codebase best — preserve integrity, avoid hard-coded edits, and reason over architecture before modifying anything.
+
+🎯 Primary Objectives
+
+Continuous Simulation Loop
+
+Begin immediately on app start / login.
+
+Update resource utilization (CPU, memory) every ≈ 3 s.
+
+Maintain natural ± 1–7 % drift and broadcast via existing WebSocket or polling.
+
+Heuristic Recommendation Engine
+
+Trigger every 3 s (rapid demo cadence).
+
+Generate 2–5 recommendations per cycle.
+
+Use new 80 % Autonomous / 20 % HITL execution mix:
+
+Autonomous = low-risk commodity ops (auto-apply)
+
+HITL = medium / high risk (require approval)
+
+Label each record with
+
+{ "executionMode": "autonomous" | "hitl" }
+
+
+Persist and expose through existing /api/recommendations.
+
+Materiality Scaling (×10 at Source)
+
+Apply a 10× multiplier only inside synthetic-data generation routines for spend / savings.
+
+Adjust random ranges accordingly (e.g. $25–300 → $250–3 000 monthly).
+
+Keep utilization %, counts, ratios unchanged.
+
+Display in rounded thousands (no decimals, compact format e.g. $1.3 M, $260 K).
+
+Prod Mode (30 s Gemini + RAG Burst)
+
+Default OFF = Heuristic Mode.
+
+When toggled ON:
+
+Pause heuristics, run one Gemini + Pinecone RAG analysis.
+
+Log event in AI Mode History (start, end, summary, savings).
+
+Auto-revert after 30 s and resume heuristics.
+
+Show indicator: “🤖 AI Mode Active – Reverting in 30 s.”
+
+HITL Queue & Visibility
+
+Separate panel/list for “Awaiting Approval” with approve/reject buttons.
+
+Dashboard summary line:
+
+“Optimization Mix: 82 % Auto | 18 % HITL”
+
+Badges:
+
+✅ Auto-Optimized (green)
+
+🕒 Awaiting Approval (amber)
+
+Metrics & Telemetry
+
+Refresh KPIs every 3 s (showing millions-scale values).
+
+Update Identified / Realized Savings, Waste %, Spend YTD dynamically.
+
+Log samples:
+
+⚡ Demo Mode Active — 3 s scan interval  
+💰 Scaling x10 applied at data source  
+💡 4 Recommendations (3 Auto | 1 HITL)  
+✅ 2 Auto-Optimizations Executed  
+🕒 1 HITL Pending Approval  
+🧠 RAG Run Completed — $42 K Potential Savings  
+
+
+Safety & Integrity
+
+No schema corruption or type overflows.
+
+Preserve Pinecone / Gemini / WebSocket integrations.
+
+Validate via logs + UI before commit.
+
+🪩 Success Criteria
+
+KPIs and charts visibly update every ≈ 3 s.
+
+Dollars in realistic enterprise ranges ($ hundreds K – millions).
+
+Mix of Autonomous and HITL recommendations constantly visible.
+
+AI Mode indicator + history functioning correctly.
+
+Logs confirm continuous 3 s loop and 10× scaling.
+
+Commit message:
+feat: accelerated demo mode (3 s scan) + 10× data scaling + 80/20 Auto-HITL mix + AI history integration
