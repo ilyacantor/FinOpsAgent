@@ -481,13 +481,15 @@ export class DatabaseStorage implements IStorage {
         )
       );
 
-    // Get identified savings awaiting approval (pending recommendations)
+    // Get identified savings awaiting approval (pending + approved recommendations)
     const [pendingSavingsResult] = await db
       .select({
         total: sql<number>`COALESCE(SUM(${recommendations.projectedAnnualSavings}), 0)::numeric`
       })
       .from(recommendations)
-      .where(eq(recommendations.status, 'pending'));
+      .where(
+        sql`${recommendations.status} IN ('pending', 'approved')`
+      );
 
     // Get realized savings YTD (from successful optimizations this year)
     const [realizedSavingsResult] = await db
