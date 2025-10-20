@@ -1,6 +1,7 @@
 import { Sidebar } from "@/components/layout/sidebar";
 import { TopNav } from "@/components/layout/top-nav";
 import { useAgentConfig } from "@/hooks/use-agent-config";
+import { AiModeIndicator } from "@/components/ai-mode-indicator";
 import { RecommendationsPanel } from "@/components/dashboard/recommendations-panel";
 import { ActivityFeed } from "@/components/dashboard/activity-feed";
 import { ResourceMonitor } from "@/components/dashboard/resource-monitor";
@@ -44,6 +45,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <AiModeIndicator />
       <TopNav 
         lastSync="Just now"
         prodMode={agentConfig?.prodMode || false}

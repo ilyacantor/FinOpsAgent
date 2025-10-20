@@ -8,6 +8,7 @@ interface AgentConfig {
   maxAutonomousRiskLevel: number;
   approvalRequiredAboveSavings: number;
   autoExecuteTypes: string[];
+  prodModeTimeRemaining?: number;
 }
 
 export function useAgentConfig() {

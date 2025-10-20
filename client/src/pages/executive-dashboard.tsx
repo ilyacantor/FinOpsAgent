@@ -97,6 +97,7 @@ export default function ExecutiveDashboard() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <AiModeIndicator />
       <TopNav 
         lastSync="2 min ago"
         prodMode={agentConfig?.prodMode || false}
@@ -262,6 +263,9 @@ export default function ExecutiveDashboard() {
               </CardContent>
             </Card>
           </div>
+
+          {/* AI Mode History */}
+          <AiModeHistory />
         </TabsContent>
 
         {/* COST TRENDS TAB */}

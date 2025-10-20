@@ -8,6 +8,7 @@ import { syntheticDataGenerator } from './synthetic-data';
 
 export class SchedulerService {
   private continuousSimulationInterval: NodeJS.Timeout | null = null;
+  private isSimulationRunning: boolean = false;
 
   constructor() {
     this.initializeScheduledTasks();
@@ -41,6 +42,12 @@ export class SchedulerService {
     console.log('✅ Continuous simulation loop active (5s interval)');
     
     this.continuousSimulationInterval = setInterval(async () => {
+      // Guard against overlapping executions
+      if (this.isSimulationRunning) {
+        return;
+      }
+
+      this.isSimulationRunning = true;
       try {
         const config = await configService.getAgentConfig();
         if (config.simulationMode) {
@@ -48,6 +55,8 @@ export class SchedulerService {
         }
       } catch (error) {
         console.error('Error in continuous simulation loop:', error);
+      } finally {
+        this.isSimulationRunning = false;
       }
     }, 5000);
   }

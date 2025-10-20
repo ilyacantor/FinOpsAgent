@@ -7,11 +7,13 @@ export interface AgentConfig {
   maxAutonomousRiskLevel: number;
   approvalRequiredAboveSavings: number;
   autoExecuteTypes: string[];
+  prodModeTimeRemaining?: number; // Seconds remaining before auto-revert (only when prodMode is true)
 }
 
 export class ConfigService {
   private static instance: ConfigService;
   private configCache: Map<string, string> = new Map();
+  private prodModeExpiresAt: number | null = null; // Timestamp when prod mode expires
 
   private constructor() {}
 
@@ -77,13 +79,22 @@ export class ConfigService {
   async getAgentConfig(): Promise<AgentConfig> {
     await this.refreshCache();
     
+    const prodMode = this.getBooleanConfig('agent.prod_mode', false);
+    let prodModeTimeRemaining: number | undefined;
+
+    if (prodMode && this.prodModeExpiresAt) {
+      const remaining = Math.max(0, Math.floor((this.prodModeExpiresAt - Date.now()) / 1000));
+      prodModeTimeRemaining = remaining;
+    }
+    
     return {
       autonomousMode: this.getBooleanConfig('agent.autonomous_mode', false),
-      prodMode: this.getBooleanConfig('agent.prod_mode', false),
+      prodMode,
       simulationMode: this.getBooleanConfig('agent.simulation_mode', false),
       maxAutonomousRiskLevel: this.getNumberConfig('agent.max_autonomous_risk_level', 5.0),
       approvalRequiredAboveSavings: this.getNumberConfig('agent.approval_required_above_savings', 10000),
-      autoExecuteTypes: this.getArrayConfig('agent.auto_execute_types', ['resize', 'storage-class'])
+      autoExecuteTypes: this.getArrayConfig('agent.auto_execute_types', ['resize', 'storage-class']),
+      prodModeTimeRemaining
     };
   }
 
@@ -100,6 +111,13 @@ export class ConfigService {
   async setProdMode(enabled: boolean, updatedBy: string): Promise<void> {
     await storage.updateSystemConfig('agent.prod_mode', enabled.toString(), updatedBy);
     this.configCache.set('agent.prod_mode', enabled.toString());
+    
+    // Track expiration time when enabling prod mode
+    if (enabled) {
+      this.prodModeExpiresAt = Date.now() + 30000; // 30 seconds from now
+    } else {
+      this.prodModeExpiresAt = null;
+    }
   }
 
   async setSimulationMode(enabled: boolean, updatedBy: string): Promise<void> {

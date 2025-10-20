@@ -1,36 +1,14 @@
-import { useEffect, useState } from "react";
 import { useAgentConfig } from "@/hooks/use-agent-config";
 import { Activity } from "lucide-react";
 
 export function AiModeIndicator() {
   const { agentConfig } = useAgentConfig();
-  const [countdown, setCountdown] = useState<number | null>(null);
 
-  useEffect(() => {
-    if (!agentConfig?.prodMode) {
-      setCountdown(null);
-      return;
-    }
-
-    // Initialize countdown at 30 seconds
-    setCountdown(30);
-
-    // Countdown timer
-    const interval = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev === null || prev <= 1) {
-          return null;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [agentConfig?.prodMode]);
-
-  if (!agentConfig?.prodMode || countdown === null) {
+  if (!agentConfig?.prodMode) {
     return null;
   }
+
+  const timeRemaining = agentConfig.prodModeTimeRemaining ?? 30;
 
   return (
     <div 
@@ -43,7 +21,7 @@ export function AiModeIndicator() {
           ⚡ Prod Mode Active (RAG)
         </span>
         <span className="text-cyan-300 text-xs" data-testid="ai-mode-countdown">
-          Auto-revert in {countdown}s
+          Auto-revert in {timeRemaining}s
         </span>
       </div>
     </div>
