@@ -586,6 +586,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI Mode History routes
+  app.get("/api/ai-mode-history", requireAuth, async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 10;
+      const history = await storage.getRecentAiModeHistory(limit);
+      res.json(history);
+    } catch (error) {
+      console.error("Error fetching AI mode history:", error);
+      res.status(500).json({ error: "Failed to fetch AI mode history" });
+    }
+  });
+
   // Manual AI analysis trigger endpoint
   app.post("/api/ai/analyze", async (req, res) => {
     try {

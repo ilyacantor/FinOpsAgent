@@ -219,14 +219,34 @@ export class SchedulerService {
   }
 
   private async analyzeWithAI() {
+    let historyId: string | undefined;
+    const startTime = new Date();
+    
     try {
+      console.log('⚡ Prod Mode (RAG) triggered – auto-revert 30s');
       console.log('🤖 Starting AI-powered resource analysis with Gemini 2.5 Flash...');
+      
+      // Create AI mode history entry to track this run
+      const historyEntry = await storage.createAiModeHistory({
+        startTime,
+        status: 'running',
+        summary: 'AI-powered analysis with Gemini 2.5 Flash + Pinecone RAG',
+        triggeredBy: 'user'
+      });
+      historyId = historyEntry.id;
       
       // Get all AWS resources from database
       const allResources = await storage.getAllAwsResources();
       
       if (allResources.length === 0) {
         console.log('No resources found to analyze');
+        await storage.updateAiModeHistory(historyId, {
+          endTime: new Date(),
+          status: 'success',
+          summary: 'No resources found to analyze',
+          recommendationsGenerated: 0,
+          totalSavingsIdentified: 0
+        });
         return;
       }
 
@@ -303,9 +323,34 @@ export class SchedulerService {
         }
       }
       
+      // Update AI mode history with results
+      if (historyId) {
+        const totalSavings = aiRecommendations.reduce((sum, rec) => 
+          sum + (rec.projectedAnnualSavings || 0), 0
+        );
+        
+        await storage.updateAiModeHistory(historyId, {
+          endTime: new Date(),
+          status: 'success',
+          summary: `AI analysis complete: ${aiRecommendations.length} recommendations generated`,
+          recommendationsGenerated: aiRecommendations.length,
+          totalSavingsIdentified: totalSavings
+        });
+        console.log('🧠 AI history updated');
+      }
+      
       console.log('✅ AI analysis completed successfully');
     } catch (error) {
       console.error('❌ Error in AI-powered analysis:', error);
+      
+      // Update AI mode history with error
+      if (historyId) {
+        await storage.updateAiModeHistory(historyId, {
+          endTime: new Date(),
+          status: 'failed',
+          errorMessage: error instanceof Error ? error.message : String(error)
+        });
+      }
     }
   }
 
