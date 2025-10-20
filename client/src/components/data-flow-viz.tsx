@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Database, Server, Cloud, Activity, TrendingDown, TrendingUp, CheckCircle2, DollarSign, Zap } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { formatCurrency } from "@/lib/currency";
+import { formatCurrencyCompact } from "@/lib/currency";
 import type { AwsResource, Recommendation, OptimizationHistory } from "@shared/schema";
 
 interface MetricsSummary {
@@ -29,7 +29,7 @@ export function DataFlowVisualization() {
 
   const { data: metrics } = useQuery<MetricsSummary>({ 
     queryKey: ['/api/metrics/summary'],
-    refetchInterval: 10000 // Auto-refresh every 10 seconds
+    refetchInterval: 3000 // Auto-refresh every 3 seconds
   });
 
   const ec2Count = resources.filter(r => r.resourceType === 'EC2').length;
@@ -155,7 +155,7 @@ export function DataFlowVisualization() {
                 <DollarSign className="w-5 h-5 text-chart-3" />
                 <div className="flex-1">
                   <div className="text-sm font-medium text-foreground">Identified Savings</div>
-                  <div className="text-xs text-chart-3">{formatCurrency(metrics?.identifiedSavingsAwaitingApproval || 0)}/month</div>
+                  <div className="text-xs text-chart-3">{formatCurrencyCompact(metrics?.identifiedSavingsAwaitingApproval || 0)}/month</div>
                 </div>
               </div>
             </div>
@@ -224,7 +224,7 @@ export function DataFlowVisualization() {
           <div data-testid="metric-monthly-spend" className="text-center">
             <div className="text-sm font-medium text-muted-foreground mb-1">Monthly AWS Spend</div>
             <div className="text-2xl font-bold text-primary" data-testid="monthly-spend-value">
-              {formatCurrency(metrics?.monthlySpend || 0)}
+              {formatCurrencyCompact(metrics?.monthlySpend || 0)}
             </div>
             {metrics && metrics.monthlySpendChange !== 0 && (
               <div className={`text-xs mt-1 flex items-center justify-center gap-1 ${metrics.monthlySpendChange > 0 ? 'text-destructive' : 'text-green-500'}`}>
@@ -237,7 +237,7 @@ export function DataFlowVisualization() {
           <div data-testid="metric-ytd-spend" className="text-center">
             <div className="text-sm font-medium text-muted-foreground mb-1">YTD AWS Spend</div>
             <div className="text-2xl font-bold text-primary" data-testid="ytd-spend-value">
-              {formatCurrency(metrics?.ytdSpend || 0)}
+              {formatCurrencyCompact(metrics?.ytdSpend || 0)}
             </div>
             {metrics && metrics.ytdSpendChange !== 0 && (
               <div className={`text-xs mt-1 flex items-center justify-center gap-1 ${metrics.ytdSpendChange > 0 ? 'text-destructive' : 'text-green-500'}`}>
@@ -250,7 +250,7 @@ export function DataFlowVisualization() {
           <div data-testid="metric-identified-savings" className="text-center">
             <div className="text-sm font-medium text-muted-foreground mb-1">Identified Savings Awaiting Approval</div>
             <div className="text-2xl font-bold text-accent" data-testid="identified-savings-value">
-              {formatCurrency(metrics?.identifiedSavingsAwaitingApproval || 0)}
+              {formatCurrencyCompact(metrics?.identifiedSavingsAwaitingApproval || 0)}
             </div>
             <div className="text-xs text-muted-foreground mt-1">
               {activeRecommendations} recommendations

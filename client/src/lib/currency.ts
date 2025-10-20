@@ -25,3 +25,26 @@ export function formatCurrencyK(value: number): string {
   const dollarAmount = value / 1000;
   return `$${(dollarAmount / 1000).toFixed(0)}K`;
 }
+
+// Compact formatting for enterprise-scale values (no decimals, clean K/M suffix)
+export function formatCurrencyCompact(value: number | string | null | undefined): string {
+  if (value === null || value === undefined) {
+    return '$0';
+  }
+  
+  // Convert to number and divide by 1000 to get original dollar amount
+  const numValue = typeof value === 'string' ? parseInt(value) : value;
+  const dollarAmount = numValue / 1000;
+  
+  // Format in compact notation
+  if (dollarAmount >= 1000000) {
+    // Millions: $1.3M
+    return `$${(dollarAmount / 1000000).toFixed(1)}M`;
+  } else if (dollarAmount >= 1000) {
+    // Thousands: $260K
+    return `$${Math.round(dollarAmount / 1000)}K`;
+  } else {
+    // Less than 1000: $500
+    return `$${Math.round(dollarAmount)}`;
+  }
+}

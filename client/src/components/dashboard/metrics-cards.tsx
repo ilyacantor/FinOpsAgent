@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
-import { formatCurrency } from "@/lib/currency";
+import { formatCurrencyCompact } from "@/lib/currency";
 import { TrendingUp, TrendingDown } from "lucide-react";
 
 interface MetricsSummary {
@@ -16,7 +16,7 @@ interface MetricsSummary {
 export function MetricsCards() {
   const { data: metrics, isLoading } = useQuery<MetricsSummary>({
     queryKey: ['/api/metrics/summary'],
-    refetchInterval: 10000, // Refresh every 10 seconds
+    refetchInterval: 3000, // Refresh every 3 seconds
   });
 
   if (isLoading) {
@@ -66,7 +66,7 @@ export function MetricsCards() {
           <div className="flex flex-col justify-center">
             <p className="text-sm font-medium text-muted-foreground">Monthly AWS Spend</p>
             <p className="text-3xl font-bold text-foreground mt-2" data-testid="monthly-spend-amount">
-              {formatCurrency(metrics.monthlySpend)}
+              {formatCurrencyCompact(metrics.monthlySpend)}
             </p>
             {renderChangeIndicator(metrics.monthlySpendChange)}
           </div>
@@ -78,7 +78,7 @@ export function MetricsCards() {
           <div className="flex flex-col justify-center">
             <p className="text-sm font-medium text-muted-foreground">YTD AWS Spend</p>
             <p className="text-3xl font-bold text-foreground mt-2" data-testid="ytd-spend-amount">
-              {formatCurrency(metrics.ytdSpend)}
+              {formatCurrencyCompact(metrics.ytdSpend)}
             </p>
             {renderChangeIndicator(metrics.ytdSpendChange)}
           </div>
@@ -90,7 +90,7 @@ export function MetricsCards() {
           <div className="flex flex-col justify-center">
             <p className="text-sm font-medium text-muted-foreground">Identified Savings</p>
             <p className="text-3xl font-bold text-accent mt-2" data-testid="identified-savings-amount">
-              {formatCurrency(metrics.identifiedSavingsAwaitingApproval)}
+              {formatCurrencyCompact(metrics.identifiedSavingsAwaitingApproval)}
             </p>
             <p className="text-sm text-muted-foreground mt-1">
               Awaiting Approval
@@ -104,7 +104,7 @@ export function MetricsCards() {
           <div className="flex flex-col justify-center">
             <p className="text-sm font-medium text-muted-foreground">Realized Savings YTD</p>
             <p className="text-3xl font-bold text-green-500 mt-2" data-testid="realized-savings-amount">
-              {formatCurrency(metrics.realizedSavingsYTD)}
+              {formatCurrencyCompact(metrics.realizedSavingsYTD)}
             </p>
             <p className="text-sm text-green-500 mt-1">
               Year to Date
