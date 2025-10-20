@@ -1,0 +1,75 @@
+Replit Agent 3 (MAX) — High-Autonomy Directive
+
+Mission: Evolve the FinOps Autopilot into a continuously self-running, realistic simulation platform with temporary AI (RAG) bursts, without breaking existing functionality.
+You know this codebase best — preserve all integrations, types, and data flows.
+
+🎯 Objectives
+
+Continuous Simulation
+
+Begin synthetic data generation and heuristic analysis immediately on app start or login.
+
+Keep evolving data realistically (CPU %, memory %, resource counts, spend trends).
+
+Update metrics every ≈ 5 seconds via existing state or WebSocket mechanisms.
+
+Operating Modes
+
+Default = Heuristic Mode (Prod Mode OFF).
+
+When user toggles Prod Mode ON, execute a full Gemini + Pinecone RAG analysis once.
+
+Auto-revert to Heuristic Mode after 30 seconds — no stacked runs.
+
+Show clear on-screen indicator: “🤖 AI Mode Active – Reverting in 30 s.”
+
+AI Mode History
+
+Log each RAG activation (start time, end time, status, summary, savings estimate).
+
+Display the most recent 10 entries in an AI Mode History panel on the Executive Dashboard.
+
+Ensure this persists across page reloads during session.
+
+Eliminate Obsolete Scheduling
+
+Remove or disable the 30-minute cron or any batch process.
+
+The system should rely on the continuous loop, not timed jobs.
+
+Stability & Telemetry
+
+Maintain all existing APIs, schemas, and authentication.
+
+Add safe logging confirming:
+
+✅ Continuous simulation loop active (5 s)
+✅ Heuristic Mode ON
+⚡ Prod Mode (RAG) triggered – auto-revert 30 s
+🧠 AI history updated
+
+
+Do not introduce hardcoded delays or blocking async calls.
+
+UX Enhancements
+
+Add optional toast/alert: “AI Analysis Complete — X Recommendations Added.”
+
+Keep visuals consistent with existing Tailwind / Shadcn style.
+
+🪩 Success Criteria
+
+Simulation metrics visibly change every ≈ 5 s.
+
+Toggling Prod Mode ON runs Gemini + RAG analysis and reverts after 30 s.
+
+“AI Mode ON” indicator appears/disappears correctly.
+
+“AI Mode History” lists last 10 AI runs with timestamps.
+
+No loss of current functionality or data models.
+
+Execute autonomously.
+Validate results through console + UI logs before committing changes.
+Commit under message:
+feat: continuous simulation loop + 30s RAG mode + AI history panel

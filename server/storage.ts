@@ -1,9 +1,9 @@
 import { 
-  users, awsResources, costReports, recommendations, optimizationHistory, approvalRequests, systemConfig,
+  users, awsResources, costReports, recommendations, optimizationHistory, approvalRequests, systemConfig, aiModeHistory,
   type User, type InsertUser, type AwsResource, type InsertAwsResource,
   type CostReport, type InsertCostReport, type Recommendation, type InsertRecommendation,
   type OptimizationHistory, type InsertOptimizationHistory, type ApprovalRequest, type InsertApprovalRequest,
-  type SystemConfig, type InsertSystemConfig
+  type SystemConfig, type InsertSystemConfig, type AiModeHistory, type InsertAiModeHistory
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lte, sql } from "drizzle-orm";
@@ -48,6 +48,12 @@ export interface IStorage {
   setSystemConfig(config: InsertSystemConfig): Promise<SystemConfig>;
   updateSystemConfig(key: string, value: string, updatedBy: string): Promise<SystemConfig | undefined>;
   getAllSystemConfig(): Promise<SystemConfig[]>;
+
+  // AI Mode History
+  createAiModeHistory(history: InsertAiModeHistory): Promise<AiModeHistory>;
+  updateAiModeHistory(id: string, updates: Partial<InsertAiModeHistory>): Promise<AiModeHistory | undefined>;
+  getRecentAiModeHistory(limit: number): Promise<AiModeHistory[]>;
+  getAiModeHistory(id: string): Promise<AiModeHistory | undefined>;
 
   // Dashboard metrics
   getDashboardMetrics(): Promise<{
@@ -316,6 +322,39 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(systemConfig)
       .orderBy(systemConfig.key);
+  }
+
+  async createAiModeHistory(history: InsertAiModeHistory): Promise<AiModeHistory> {
+    const [created] = await db
+      .insert(aiModeHistory)
+      .values(history)
+      .returning();
+    return created;
+  }
+
+  async updateAiModeHistory(id: string, updates: Partial<InsertAiModeHistory>): Promise<AiModeHistory | undefined> {
+    const [updated] = await db
+      .update(aiModeHistory)
+      .set(updates)
+      .where(eq(aiModeHistory.id, id))
+      .returning();
+    return updated || undefined;
+  }
+
+  async getRecentAiModeHistory(limit: number): Promise<AiModeHistory[]> {
+    return await db
+      .select()
+      .from(aiModeHistory)
+      .orderBy(desc(aiModeHistory.createdAt))
+      .limit(limit);
+  }
+
+  async getAiModeHistory(id: string): Promise<AiModeHistory | undefined> {
+    const [history] = await db
+      .select()
+      .from(aiModeHistory)
+      .where(eq(aiModeHistory.id, id));
+    return history || undefined;
   }
 
   async getDashboardMetrics(): Promise<{

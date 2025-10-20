@@ -104,6 +104,19 @@ export const historicalCostSnapshots = pgTable("historical_cost_snapshots", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const aiModeHistory = pgTable("ai_mode_history", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  startTime: timestamp("start_time").notNull(),
+  endTime: timestamp("end_time"),
+  status: text("status").notNull(), // running, success, failed
+  summary: text("summary"),
+  recommendationsGenerated: integer("recommendations_generated").default(0),
+  totalSavingsIdentified: integer("total_savings_identified").default(0), // Multiplied by 1000, no pennies
+  triggeredBy: text("triggered_by").default("user"), // user, system
+  errorMessage: text("error_message"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Relations
 export const recommendationsRelations = relations(recommendations, ({ one }) => ({
   resource: one(awsResources, {
@@ -147,6 +160,7 @@ export const insertOptimizationHistorySchema = createInsertSchema(optimizationHi
 export const insertApprovalRequestSchema = createInsertSchema(approvalRequests).omit({ id: true, createdAt: true, approvalDate: true });
 export const insertSystemConfigSchema = createInsertSchema(systemConfig).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertHistoricalCostSnapshotSchema = createInsertSchema(historicalCostSnapshots).omit({ id: true, createdAt: true });
+export const insertAiModeHistorySchema = createInsertSchema(aiModeHistory).omit({ id: true, createdAt: true });
 
 // Types
 export type User = typeof users.$inferSelect;
@@ -165,3 +179,5 @@ export type SystemConfig = typeof systemConfig.$inferSelect;
 export type InsertSystemConfig = z.infer<typeof insertSystemConfigSchema>;
 export type HistoricalCostSnapshot = typeof historicalCostSnapshots.$inferSelect;
 export type InsertHistoricalCostSnapshot = z.infer<typeof insertHistoricalCostSnapshotSchema>;
+export type AiModeHistory = typeof aiModeHistory.$inferSelect;
+export type InsertAiModeHistory = z.infer<typeof insertAiModeHistorySchema>;
