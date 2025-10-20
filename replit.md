@@ -135,6 +135,16 @@ The system is optimized for maximum speed when running in AI mode with synthetic
 - **What Stays Stable**: Resource counts, monthly costs, and aggregate metrics remain stable
 - **Batch Operations**: Multiple resource updates processed together for better performance
 
+### Heuristic Recommendation Engine (Added October 2025)
+- **Automated Generation**: Runs every 3 simulation cycles (~15 seconds) to identify cost-saving opportunities
+- **Waste Detection**: Analyzes resources for underutilization (CPU < 30%, Memory < 40%)
+- **Recommendation Types**: Rightsizing, scheduling (off-hours shutdown), storage-tiering
+- **Risk Levels**: Low (60%), Medium (28%), High (12%) with corresponding savings estimates ($25-$300/month)
+- **Auto-Optimization**: Low-risk recommendations auto-execute immediately; medium/high-risk await approval
+- **Integration with Prod Mode**: Pauses when RAG is active, resumes after auto-revert
+- **Telemetry Logs**: Shows "💡 New Recommendations Generated", "💰 Total Potential Savings", "✅ Auto-Optimizations Applied"
+- **Metrics Impact**: Identified Savings (pending+approved), Realized Savings YTD (auto-executed), Waste % Optimized
+
 ### Database Optimizations
 - **Vector-Based RAG**: Pinecone handles historical context retrieval via semantic search (no database queries for RAG)
 - **PostgreSQL for Core Data**: Primary storage for resources, recommendations, and execution history
