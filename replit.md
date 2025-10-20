@@ -127,9 +127,12 @@ The system is optimized for maximum speed when running in AI mode with synthetic
 - **Auto Cache Invalidation**: Cache automatically refreshes after new recommendations are generated
 - **Automatic Vector Storage**: All recommendations and optimization history automatically stored in Pinecone
 
-### Synthetic Data Optimization
-- **Reduced Frequency**: Data evolution runs every 30 minutes (previously 15) to reduce CPU load
-- **Resource Addition**: New synthetic resources added every 4 hours (previously 2) for efficiency
+### Continuous Simulation (Updated October 2025)
+- **Real-time Evolution**: Data evolution runs every 5 seconds (previously 30 minutes) for visible, continuous simulation
+- **Utilization Changes**: Each cycle randomly adjusts CPU/memory utilization by ±1-7% for realistic variance
+- **Guard Protection**: `isSimulationRunning` flag prevents overlapping executions and race conditions
+- **What Changes**: Resource utilization percentages (CPU, memory) evolve continuously
+- **What Stays Stable**: Resource counts, monthly costs, and aggregate metrics remain stable
 - **Batch Operations**: Multiple resource updates processed together for better performance
 
 ### Database Optimizations
