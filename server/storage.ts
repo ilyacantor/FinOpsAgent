@@ -56,6 +56,17 @@ export interface IStorage {
     resourcesAnalyzed: number;
     wastePercentage: number;
   }>;
+
+  // Metrics summary for autopilot
+  getMetricsSummary(): Promise<{
+    monthlySpend: number;
+    ytdSpend: number;
+    identifiedSavingsAwaitingApproval: number;
+    realizedSavingsYTD: number;
+    wastePercentOptimizedYTD: number;
+    monthlySpendChange: number;
+    ytdSpendChange: number;
+  }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -361,6 +372,127 @@ export class DatabaseStorage implements IStorage {
       realizedSavings,
       resourcesAnalyzed: Number(resourcesResult.count),
       wastePercentage: Math.round(wastePercentage)
+    };
+  }
+
+  async getMetricsSummary(): Promise<{
+    monthlySpend: number;
+    ytdSpend: number;
+    identifiedSavingsAwaitingApproval: number;
+    realizedSavingsYTD: number;
+    wastePercentOptimizedYTD: number;
+    monthlySpendChange: number;
+    ytdSpendChange: number;
+  }> {
+    const now = new Date();
+    
+    // Current month start
+    const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    
+    // Last month start and end
+    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+    
+    // Year-to-date start
+    const ytdStart = new Date(now.getFullYear(), 0, 1);
+    
+    // Prior year YTD start and end
+    const priorYtdStart = new Date(now.getFullYear() - 1, 0, 1);
+    const priorYtdEnd = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+
+    // Get current month spend
+    const [currentMonthResult] = await db
+      .select({
+        total: sql<number>`COALESCE(SUM(${costReports.cost}), 0)::numeric`
+      })
+      .from(costReports)
+      .where(gte(costReports.reportDate, currentMonthStart));
+
+    // Get last month spend
+    const [lastMonthResult] = await db
+      .select({
+        total: sql<number>`COALESCE(SUM(${costReports.cost}), 0)::numeric`
+      })
+      .from(costReports)
+      .where(
+        and(
+          gte(costReports.reportDate, lastMonthStart),
+          lte(costReports.reportDate, lastMonthEnd)
+        )
+      );
+
+    // Get YTD spend
+    const [ytdResult] = await db
+      .select({
+        total: sql<number>`COALESCE(SUM(${costReports.cost}), 0)::numeric`
+      })
+      .from(costReports)
+      .where(gte(costReports.reportDate, ytdStart));
+
+    // Get prior year YTD spend
+    const [priorYtdResult] = await db
+      .select({
+        total: sql<number>`COALESCE(SUM(${costReports.cost}), 0)::numeric`
+      })
+      .from(costReports)
+      .where(
+        and(
+          gte(costReports.reportDate, priorYtdStart),
+          lte(costReports.reportDate, priorYtdEnd)
+        )
+      );
+
+    // Get identified savings awaiting approval (pending recommendations)
+    const [pendingSavingsResult] = await db
+      .select({
+        total: sql<number>`COALESCE(SUM(${recommendations.projectedAnnualSavings}), 0)::numeric`
+      })
+      .from(recommendations)
+      .where(eq(recommendations.status, 'pending'));
+
+    // Get realized savings YTD (from successful optimizations this year)
+    const [realizedSavingsResult] = await db
+      .select({
+        total: sql<number>`COALESCE(SUM(${optimizationHistory.actualSavings}), 0)::numeric`
+      })
+      .from(optimizationHistory)
+      .where(
+        and(
+          gte(optimizationHistory.executionDate, ytdStart),
+          eq(optimizationHistory.status, 'success')
+        )
+      );
+
+    // Calculate values
+    const monthlySpend = Number(currentMonthResult.total);
+    const lastMonthSpend = Number(lastMonthResult.total);
+    const ytdSpend = Number(ytdResult.total);
+    const priorYtdSpend = Number(priorYtdResult.total);
+    const identifiedSavingsAwaitingApproval = Number(pendingSavingsResult.total);
+    const realizedSavingsYTD = Number(realizedSavingsResult.total);
+
+    // Calculate percent changes
+    const monthlySpendChange = lastMonthSpend > 0 
+      ? ((monthlySpend - lastMonthSpend) / lastMonthSpend) * 100 
+      : 0;
+    
+    const ytdSpendChange = priorYtdSpend > 0 
+      ? ((ytdSpend - priorYtdSpend) / priorYtdSpend) * 100 
+      : 0;
+
+    // Calculate waste percent optimized YTD
+    const wastePercentOptimizedYTD = ytdSpend > 0 
+      ? (realizedSavingsYTD / ytdSpend) * 100 
+      : 0;
+
+    return {
+      monthlySpend,
+      ytdSpend,
+      identifiedSavingsAwaitingApproval,
+      realizedSavingsYTD,
+      wastePercentOptimizedYTD: Math.round(wastePercentOptimizedYTD * 10) / 10,
+      monthlySpendChange: Math.round(monthlySpendChange * 10) / 10,
+      ytdSpendChange: Math.round(ytdSpendChange * 10) / 10
     };
   }
 }

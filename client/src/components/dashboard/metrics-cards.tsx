@@ -1,24 +1,28 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/currency";
+import { TrendingUp, TrendingDown } from "lucide-react";
 
-interface DashboardMetrics {
+interface MetricsSummary {
   monthlySpend: number;
-  identifiedSavings: number;
-  resourcesAnalyzed: number;
-  wastePercentage: number;
+  ytdSpend: number;
+  identifiedSavingsAwaitingApproval: number;
+  realizedSavingsYTD: number;
+  wastePercentOptimizedYTD: number;
+  monthlySpendChange: number;
+  ytdSpendChange: number;
 }
 
 export function MetricsCards() {
-  const { data: metrics, isLoading } = useQuery<DashboardMetrics>({
-    queryKey: ['/api/dashboard/metrics'],
-    refetchInterval: 60000, // Refresh every minute
+  const { data: metrics, isLoading } = useQuery<MetricsSummary>({
+    queryKey: ['/api/metrics/summary'],
+    refetchInterval: 10000, // Refresh every 10 seconds
   });
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {Array.from({ length: 4 }).map((_, i) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+        {Array.from({ length: 5 }).map((_, i) => (
           <Card key={i} className="animate-pulse">
             <CardContent className="p-6">
               <div className="h-20 bg-muted rounded"></div>
@@ -31,7 +35,7 @@ export function MetricsCards() {
 
   if (!metrics) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         <Card>
           <CardContent className="p-6 text-center text-muted-foreground">
             No metrics available
@@ -41,8 +45,22 @@ export function MetricsCards() {
     );
   }
 
+  const renderChangeIndicator = (change: number) => {
+    if (change === 0) return null;
+    const isPositive = change > 0;
+    const Icon = isPositive ? TrendingUp : TrendingDown;
+    const colorClass = isPositive ? "text-destructive" : "text-green-500";
+    
+    return (
+      <div className={`flex items-center gap-1 text-sm ${colorClass} mt-1`}>
+        <Icon className="w-3.5 h-3.5" />
+        <span>{Math.abs(change).toFixed(1)}% vs last period</span>
+      </div>
+    );
+  };
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
       <Card className="hover:shadow-lg transition-all duration-200 hover:-translate-y-1" data-testid="card-monthly-spend">
         <CardContent className="p-6">
           <div className="flex flex-col justify-center">
@@ -50,9 +68,19 @@ export function MetricsCards() {
             <p className="text-3xl font-bold text-foreground mt-2" data-testid="monthly-spend-amount">
               {formatCurrency(metrics.monthlySpend)}
             </p>
-            <p className="text-sm text-destructive mt-1">
-              +12.5% vs last month
+            {renderChangeIndicator(metrics.monthlySpendChange)}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="hover:shadow-lg transition-all duration-200 hover:-translate-y-1" data-testid="card-ytd-spend">
+        <CardContent className="p-6">
+          <div className="flex flex-col justify-center">
+            <p className="text-sm font-medium text-muted-foreground">YTD AWS Spend</p>
+            <p className="text-3xl font-bold text-foreground mt-2" data-testid="ytd-spend-amount">
+              {formatCurrency(metrics.ytdSpend)}
             </p>
+            {renderChangeIndicator(metrics.ytdSpendChange)}
           </div>
         </CardContent>
       </Card>
@@ -62,38 +90,38 @@ export function MetricsCards() {
           <div className="flex flex-col justify-center">
             <p className="text-sm font-medium text-muted-foreground">Identified Savings</p>
             <p className="text-3xl font-bold text-accent mt-2" data-testid="identified-savings-amount">
-              {formatCurrency(metrics.identifiedSavings)}
-            </p>
-            <p className="text-sm text-accent mt-1">
-              Annual projection
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="hover:shadow-lg transition-all duration-200 hover:-translate-y-1" data-testid="card-resources-analyzed">
-        <CardContent className="p-6">
-          <div className="flex flex-col justify-center">
-            <p className="text-sm font-medium text-muted-foreground">Resources Analyzed</p>
-            <p className="text-3xl font-bold text-foreground mt-2" data-testid="resources-analyzed-count">
-              {metrics.resourcesAnalyzed.toLocaleString()}
+              {formatCurrency(metrics.identifiedSavingsAwaitingApproval)}
             </p>
             <p className="text-sm text-muted-foreground mt-1">
-              Across 12 services
+              Awaiting Approval
             </p>
           </div>
         </CardContent>
       </Card>
 
-      <Card className="hover:shadow-lg transition-all duration-200 hover:-translate-y-1" data-testid="card-waste-percentage">
+      <Card className="hover:shadow-lg transition-all duration-200 hover:-translate-y-1" data-testid="card-realized-savings">
         <CardContent className="p-6">
           <div className="flex flex-col justify-center">
-            <p className="text-sm font-medium text-muted-foreground">Waste Percentage</p>
-            <p className="text-3xl font-bold text-chart-3 mt-2" data-testid="waste-percentage-amount">
-              {metrics.wastePercentage}%
+            <p className="text-sm font-medium text-muted-foreground">Realized Savings YTD</p>
+            <p className="text-3xl font-bold text-green-500 mt-2" data-testid="realized-savings-amount">
+              {formatCurrency(metrics.realizedSavingsYTD)}
             </p>
-            <p className="text-sm text-destructive mt-1">
-              High waste detected
+            <p className="text-sm text-green-500 mt-1">
+              Year to Date
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="hover:shadow-lg transition-all duration-200 hover:-translate-y-1" data-testid="card-waste-optimized">
+        <CardContent className="p-6">
+          <div className="flex flex-col justify-center">
+            <p className="text-sm font-medium text-muted-foreground">Waste % Optimized</p>
+            <p className="text-3xl font-bold text-chart-3 mt-2" data-testid="waste-optimized-amount">
+              {metrics.wastePercentOptimizedYTD.toFixed(1)}%
+            </p>
+            <p className="text-sm text-muted-foreground mt-1">
+              YTD Performance
             </p>
           </div>
         </CardContent>

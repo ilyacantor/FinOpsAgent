@@ -1,23 +1,19 @@
 import { Link } from "wouter";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Bot, Cpu } from "lucide-react";
+import { Cpu } from "lucide-react";
 import autonomosLogo from "@assets/MAIN LOGO TEAL DARK BG PNG_1760814802183.png";
 
 interface TopNavProps {
   lastSync?: string;
   prodMode: boolean;
-  syntheticData: boolean;
   onProdModeChange: (enabled: boolean) => void;
-  onSyntheticDataChange: (enabled: boolean) => void;
 }
 
 export function TopNav({ 
   lastSync = "Just now", 
-  prodMode, 
-  syntheticData,
-  onProdModeChange,
-  onSyntheticDataChange
+  prodMode,
+  onProdModeChange
 }: TopNavProps) {
   return (
     <nav 
@@ -65,26 +61,6 @@ export function TopNav({
               onCheckedChange={onProdModeChange}
               className="data-[state=checked]:bg-cyan-500"
               data-testid="toggle-prod-mode"
-            />
-          </div>
-
-          {/* Synthetic Data Toggle */}
-          <div className="flex items-center gap-2">
-            <div className="hidden sm:flex items-center gap-1.5">
-              <Bot className="w-3.5 h-3.5 text-purple-400" />
-              <Label 
-                htmlFor="synthetic-toggle" 
-                className="text-sm text-gray-300 cursor-pointer font-medium"
-              >
-                Synthetic
-              </Label>
-            </div>
-            <Switch
-              id="synthetic-toggle"
-              checked={syntheticData}
-              onCheckedChange={onSyntheticDataChange}
-              className="data-[state=checked]:bg-purple-500"
-              data-testid="toggle-synthetic"
             />
           </div>
         </div>

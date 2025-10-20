@@ -35,6 +35,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   };
 
+  // Prod Mode auto-revert state
+  let prodModeTimeout: NodeJS.Timeout | null = null;
+  let prodModeActivationTime: number | null = null;
+
   // Dashboard metrics endpoint
   app.get("/api/dashboard/metrics", async (req, res) => {
     try {
@@ -54,6 +58,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching cost trends:", error);
       res.status(500).json({ error: "Failed to fetch cost trends" });
+    }
+  });
+
+  // Metrics summary endpoint for autopilot
+  app.get("/api/metrics/summary", async (req, res) => {
+    try {
+      const summary = await storage.getMetricsSummary();
+      res.json(summary);
+    } catch (error) {
+      console.error("Error fetching metrics summary:", error);
+      res.status(500).json({ error: "Failed to fetch metrics summary" });
+    }
+  });
+
+  // Prod Mode toggle with auto-revert
+  app.post("/api/mode/prod", async (req, res) => {
+    try {
+      const { enabled } = req.body;
+      const { configService } = await import('./services/config.js');
+
+      if (typeof enabled !== 'boolean') {
+        return res.status(400).json({ error: "Enabled must be a boolean value" });
+      }
+
+      // Clear existing timeout if any
+      if (prodModeTimeout) {
+        clearTimeout(prodModeTimeout);
+        prodModeTimeout = null;
+        prodModeActivationTime = null;
+      }
+
+      if (enabled) {
+        // Turn on prod mode
+        await configService.setProdMode(true, 'user');
+        prodModeActivationTime = Date.now();
+
+        // Schedule auto-revert after 30 seconds
+        prodModeTimeout = setTimeout(async () => {
+          console.log('Auto-reverting Prod Mode to OFF after 30 seconds');
+          await configService.setProdMode(false, 'system-auto-revert');
+          prodModeTimeout = null;
+          prodModeActivationTime = null;
+        }, 30000);
+
+        res.json({ 
+          prodMode: true, 
+          timeRemaining: 30 
+        });
+      } else {
+        // Turn off prod mode immediately
+        await configService.setProdMode(false, 'user');
+        res.json({ 
+          prodMode: false, 
+          timeRemaining: 0 
+        });
+      }
+    } catch (error) {
+      console.error("Error toggling prod mode:", error);
+      res.status(500).json({ error: "Failed to toggle prod mode" });
     }
   });
 

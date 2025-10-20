@@ -10,6 +10,7 @@ import Recommendations from "@/pages/recommendations";
 import Automation from "@/pages/automation";
 import Governance from "@/pages/governance";
 import AgentConfig from "@/pages/agent-config";
+import FAQ from "@/pages/faq";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -22,6 +23,7 @@ function Router() {
       <Route path="/automation" component={Automation}/>
       <Route path="/governance" component={Governance}/>
       <Route path="/agent-config" component={AgentConfig}/>
+      <Route path="/faq" component={FAQ}/>
       <Route component={NotFound} />
     </Switch>
   );

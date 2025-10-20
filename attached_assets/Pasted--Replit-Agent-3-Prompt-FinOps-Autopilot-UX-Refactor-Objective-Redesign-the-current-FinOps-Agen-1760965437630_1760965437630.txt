@@ -1,0 +1,141 @@
+🧠 Replit Agent 3 Prompt — FinOps Autopilot UX Refactor
+
+Objective:
+Redesign the current FinOps Agent UI/UX to reflect continuous 24/7 autonomous operation, removing redundant manual steps (Generate → Run).
+Default to always-on Simulation Mode, automatically evolving synthetic AWS data.
+Introduce a new FAQ tab and reorganize the dashboard metrics as described below.
+
+🏗️ Functional Refactor Summary
+
+Remove:
+
+“AWS Data Simulation” container
+
+“Generate Simulation Data” and “Run AI Analysis” buttons
+
+Synthetic/Prod toggle switch (replace with “Prod Mode” toggle only)
+
+Add:
+
+Continuous background synthetic data generation and AI heuristic analysis loop (auto-run on app start)
+
+Auto-refresh of metrics (WebSocket or interval ≈ 10 sec)
+
+Automatic temporary “Prod Mode” (true → LLM/RAG) that reverts to heuristic after 30 s
+
+FAQ page (new route /faq) with comprehensive explanations
+
+📊 Dashboard Structure
+
+Executive Dashboard
+
+- Monthly AWS Spend   $xx,xxx.xx  (+/- vs last month)
+- YTD AWS Spend       $xxx,xxx.xx  (+/- vs prior-year YTD)
+- Identified Savings Awaiting Approval   $n ( x recommendations )
+- Realized Savings YTD   $n
+- Waste % Optimized YTD   x%
+
+
+Operations → Dashboard
+
+Data Flow Pipeline [diagram + stats]
+  - Monthly AWS Spend (+/-)
+  - YTD AWS Spend (+/-)
+  - Identified Savings Awaiting Approval
+
+
+Remove the old KPI row entirely; all metrics live inside the pipeline container.
+
+Behavior
+
+Simulation mode always on.
+
+Data auto-updates using heuristic analysis.
+
+If user toggles “Prod Mode ON”:
+
+Start AI/RAG scan → run Gemini & Pinecone routines.
+
+Automatically revert to OFF after 30 s.
+
+📚 FAQ Tab (/faq)
+
+Provide expandable accordion sections answering:
+
+What is FinOps Autopilot?
+Overview paragraph (from the description).
+
+What is Prod Mode?
+
+Prod Mode uses live AI (Gemini + RAG) for contextual recommendations.
+It runs for 30 seconds, then returns to Heuristic Mode.
+
+What is Heuristic Mode?
+
+Continuous background analysis using lightweight statistical models.
+No external keys required.
+
+What data is simulated?
+
+Synthetic EC2, RDS, S3 metrics modeled on real AWS usage trends.
+
+What are Auto-Optimizations vs Human-Approved?
+
+Low-risk optimizations apply automatically; others await manual approval.
+
+How often are metrics updated?
+
+Every 10 seconds in UI (adjustable via interval in settings.js).
+
+Where is data stored?
+
+PostgreSQL + vector cache (Pinecone) — all transient in simulation mode.
+
+Add placeholder markdown for additional FAQ entries.
+
+🧩 Technical Implementation Notes
+
+Frontend
+
+Add /faq route (Wouter) → FAQPage.tsx with Tailwind accordion.
+
+Remove Simulation Container components (SimulationPanel.tsx, etc.).
+
+Replace toggle logic: only Prod Mode boolean, auto-reset via setTimeout(30000).
+
+Periodic useEffect interval for metric updates (setInterval(fetchMetrics, 10000)).
+
+Use WebSocket if available (onmessage → refresh state).
+
+Backend
+
+Start simulation cron job on server startup.
+
+Replace manual simulation endpoints with background generators (generateSyntheticData()).
+
+Implement /metrics/summary endpoint returning latest KPIs.
+
+/mode/prod POST toggles prod LLM scan → auto-reset after 30 s.
+
+Database
+
+Keep existing schema; mark records as synthetic = true.
+
+Auto-append new synthetic samples periodically.
+
+Notifications
+
+WebSocket push when new recommendations created or auto-applied.
+
+✅ Deliverables
+
+Updated React components (Dashboard, FAQ, Toggle)
+
+Updated Express backend with continuous simulation + prod-mode timer
+
+Automatic metric refresh
+
+Removed obsolete containers/buttons
+
+Final commit message:
+feat: Continuous Simulation UX & FAQ overhaul for FinOps Autopilot

@@ -14,28 +14,31 @@ export function useAgentConfig() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch current agent configuration
+  // Fetch current agent configuration with polling to catch auto-revert
   const { data: agentConfig, isLoading } = useQuery<AgentConfig>({
     queryKey: ['/api/agent-config'],
-    staleTime: 30000,
+    refetchInterval: 5000, // Poll every 5 seconds to catch prod mode auto-revert
   });
 
-  // Mutation to update prod mode
+  // Mutation to update prod mode using new auto-revert endpoint
   const updateProdMode = useMutation({
     mutationFn: async (enabled: boolean) => {
-      const response = await fetch('/api/agent-config/prod-mode', {
+      const response = await fetch('/api/mode/prod', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ enabled, updatedBy: 'admin-user' })
+        body: JSON.stringify({ enabled })
       });
       if (!response.ok) throw new Error('Failed to update prod mode');
       return response.json();
     },
     onSuccess: (data) => {
-      queryClient.setQueryData(['/api/agent-config'], data);
+      queryClient.invalidateQueries({ queryKey: ['/api/agent-config'] });
+      const message = data.prodMode 
+        ? `Prod Mode ON (AI with RAG) - Auto-reverts in ${data.timeRemaining}s` 
+        : 'Prod Mode OFF (Heuristics)';
       toast({
         title: "Prod Mode Updated",
-        description: `Prod Mode ${data.prodMode ? 'ON (AI with RAG)' : 'OFF (Heuristics)'}`,
+        description: message,
       });
     },
     onError: () => {
@@ -47,37 +50,9 @@ export function useAgentConfig() {
     }
   });
 
-  // Mutation to update simulation mode
-  const updateSimulationMode = useMutation({
-    mutationFn: async (enabled: boolean) => {
-      const response = await fetch('/api/agent-config/simulation-mode', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ enabled, updatedBy: 'admin-user' })
-      });
-      if (!response.ok) throw new Error('Failed to update simulation mode');
-      return response.json();
-    },
-    onSuccess: (data) => {
-      queryClient.setQueryData(['/api/agent-config'], data);
-      toast({
-        title: "Simulation Mode Updated",
-        description: `Simulation Mode ${data.simulationMode ? 'ON (Synthetic Data)' : 'OFF (Real Data)'}`,
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Update Failed",
-        description: "Failed to update simulation mode.",
-        variant: "destructive",
-      });
-    }
-  });
-
   return {
     agentConfig,
     isLoading,
     updateProdMode: (enabled: boolean) => updateProdMode.mutate(enabled),
-    updateSimulationMode: (enabled: boolean) => updateSimulationMode.mutate(enabled),
   };
 }
