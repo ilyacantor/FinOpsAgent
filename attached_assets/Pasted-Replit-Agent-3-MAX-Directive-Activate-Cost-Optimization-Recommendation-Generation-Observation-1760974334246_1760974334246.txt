@@ -1,0 +1,73 @@
+Replit Agent 3 (MAX) Directive — Activate Cost Optimization & Recommendation Generation
+
+Observation:
+Simulation and heuristic loops are working perfectly, but the generateRecommendations or equivalent optimization pipeline isn’t producing any active savings events — no entries under Identified Savings or Optimization Completed.
+
+Goal:
+Ensure that every continuous simulation cycle (or at least one in every few) triggers the recommendation engine to produce synthetic cost savings opportunities that appear in metrics, history, and logs — just like a live FinOps system would.
+Some of these should be auto-executed (“Auto-Optimizations”) while others wait for human approval.
+
+🎯 Objectives
+
+Heuristic Recommendation Logic
+
+On each 5-second simulation cycle (or every Nth iteration, e.g., 3–4 times per minute), evaluate AWS resources.
+
+Identify synthetic “waste” (CPU < 30%, Memory < 40%, storage unused, etc.).
+
+Generate a small number of fake recommendations (1–3 per cycle) with random but plausible savings:
+
+$25–$300 monthly
+
+riskLevel: low | medium | high
+
+type: rightsizing | scheduling | storage-tiering
+
+Persist to recommendations table and update Identified Savings KPI.
+
+Auto-Optimization Behavior
+
+For low-risk synthetic recommendations, automatically mark as “executed” and record in Optimization History with realized savings.
+
+For medium/high-risk, mark as “awaiting approval”.
+
+Metrics Reflection
+
+Identified Savings, Realized Savings, and Waste % should update dynamically.
+
+Ensure dashboards visually reflect new recommendations within ≤10 s.
+
+Prod Mode Interaction
+
+When Prod Mode (RAG) is ON, run the real Gemini + Pinecone analysis and append its results to the same recommendation stream.
+
+After auto-revert, system continues generating heuristic recommendations as before.
+
+Telemetry & Validation
+
+Logs should show:
+
+💡 New Recommendations Generated (3)
+💰 Total Potential Savings: $512.38
+✅ 1 Auto-Optimization Applied
+🧠 RAG Analysis Results Added (Prod Mode)
+
+
+Confirm /api/recommendations endpoint returns active data.
+
+🪩 Success Criteria
+
+Identified Savings and Realized Savings values update continuously.
+
+Recommendations list shows both heuristic (synthetic) and AI (Prod Mode) entries.
+
+“Optimization Completed” events appear in activity log automatically.
+
+Waste % fluctuates slightly over time to simulate dynamics.
+
+No console or database errors; all data flows remain consistent.
+
+Execute autonomously.
+Preserve all working simulation, RAG, and UI refresh features.
+Commit under:
+feat: heuristic recommendation generator + auto-optimization logic

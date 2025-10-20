@@ -9,6 +9,7 @@ import { syntheticDataGenerator } from './synthetic-data';
 export class SchedulerService {
   private continuousSimulationInterval: NodeJS.Timeout | null = null;
   private isSimulationRunning: boolean = false;
+  private simulationCycleCount: number = 0;
 
   constructor() {
     this.initializeScheduledTasks();
@@ -51,7 +52,16 @@ export class SchedulerService {
       try {
         const config = await configService.getAgentConfig();
         if (config.simulationMode) {
+          // Evolve resource utilization data
           await syntheticDataGenerator.evolveResources();
+          
+          // Increment cycle counter
+          this.simulationCycleCount++;
+          
+          // Generate heuristic recommendations every 3 cycles (~15 seconds)
+          if (this.simulationCycleCount % 3 === 0) {
+            await this.generateHeuristicRecommendations();
+          }
         }
       } catch (error) {
         console.error('Error in continuous simulation loop:', error);
@@ -421,6 +431,205 @@ export class SchedulerService {
       }
     } catch (error) {
       console.error('Error checking Trusted Advisor:', error);
+    }
+  }
+
+  // Heuristic recommendation generator - analyzes synthetic resources for waste
+  private async generateHeuristicRecommendations() {
+    try {
+      const config = await configService.getAgentConfig();
+      
+      // Skip if Prod Mode is active (AI takes over)
+      if (config.prodMode) {
+        return;
+      }
+      
+      // Get all resources from database
+      const resources = await storage.getAllAwsResources();
+      
+      if (resources.length === 0) {
+        return;
+      }
+      
+      // Identify underutilized resources (potential waste)
+      const wastefulResources = resources.filter(resource => {
+        const metrics = resource.utilizationMetrics as any;
+        if (!metrics) return false;
+        
+        // Define waste thresholds
+        const cpuUtil = metrics.avgCpuUtilization || metrics.cpuUtilization || 50;
+        const memUtil = metrics.avgMemoryUtilization || metrics.memoryUtilization || 50;
+        
+        // Resource is wasteful if CPU < 30% OR Memory < 40%
+        return cpuUtil < 30 || memUtil < 40;
+      });
+      
+      if (wastefulResources.length === 0) {
+        return;
+      }
+      
+      // Generate 1-3 recommendations per cycle
+      const numRecommendations = Math.min(
+        Math.floor(Math.random() * 3) + 1, // 1-3 recommendations
+        wastefulResources.length
+      );
+      
+      // Shuffle and pick random resources
+      const shuffled = wastefulResources.sort(() => Math.random() - 0.5);
+      const selectedResources = shuffled.slice(0, numRecommendations);
+      
+      let newRecommendationsCount = 0;
+      let totalSavings = 0;
+      let autoOptimizedCount = 0;
+      
+      for (const resource of selectedResources) {
+        // Check if we already have a pending recommendation for this resource
+        const existingRecommendations = await storage.getRecommendations();
+        const hasExisting = existingRecommendations.some(
+          r => r.resourceId === resource.resourceId && (r.status === 'pending' || r.status === 'approved')
+        );
+        
+        if (hasExisting) {
+          continue;
+        }
+        
+        // Generate synthetic recommendation
+        const recType = ['rightsizing', 'scheduling', 'storage-tiering'][Math.floor(Math.random() * 3)] as any;
+        const riskLevel = Math.random() < 0.6 ? 'low' : (Math.random() < 0.7 ? 'medium' : 'high');
+        const monthlySavings = Math.floor(Math.random() * 275) + 25; // $25-$300
+        const annualSavings = monthlySavings * 12;
+        
+        const metrics = resource.utilizationMetrics as any;
+        const cpuUtil = metrics?.avgCpuUtilization || metrics?.cpuUtilization || 0;
+        const memUtil = metrics?.avgMemoryUtilization || metrics?.memoryUtilization || 0;
+        
+        // Create recommendation
+        const recommendation = await storage.createRecommendation({
+          resourceId: resource.resourceId,
+          type: recType,
+          priority: riskLevel === 'high' ? 'critical' : (riskLevel === 'medium' ? 'high' : 'medium'),
+          title: this.generateRecommendationTitle(recType, resource.resourceType),
+          description: this.generateRecommendationDescription(recType, cpuUtil, memUtil, monthlySavings),
+          currentConfig: resource.currentConfig as any,
+          recommendedConfig: this.generateRecommendedConfig(recType, resource),
+          projectedMonthlySavings: monthlySavings,
+          projectedAnnualSavings: annualSavings,
+          riskLevel: riskLevel === 'low' ? 3 : (riskLevel === 'medium' ? 7 : 9)
+        });
+        
+        newRecommendationsCount++;
+        totalSavings += annualSavings;
+        
+        // Auto-optimize low-risk recommendations
+        if (riskLevel === 'low') {
+          try {
+            await this.executeSyntheticOptimization(recommendation);
+            await storage.updateRecommendationStatus(recommendation.id, 'executed');
+            autoOptimizedCount++;
+            
+            console.log(`✅ Auto-executed: ${recommendation.title} (${riskLevel} risk)`);
+          } catch (error) {
+            console.error(`❌ Auto-execution failed for ${recommendation.id}:`, error);
+            await storage.updateRecommendationStatus(recommendation.id, 'failed');
+          }
+        }
+      }
+      
+      if (newRecommendationsCount > 0) {
+        console.log(`💡 New Recommendations Generated (${newRecommendationsCount})`);
+        console.log(`💰 Total Potential Savings: $${totalSavings.toLocaleString()}/year`);
+        if (autoOptimizedCount > 0) {
+          console.log(`✅ ${autoOptimizedCount} Auto-Optimization${autoOptimizedCount > 1 ? 's' : ''} Applied`);
+        }
+      }
+    } catch (error) {
+      console.error('Error generating heuristic recommendations:', error);
+    }
+  }
+  
+  private generateRecommendationTitle(type: string, resourceType: string): string {
+    const titles: Record<string, string[]> = {
+      rightsizing: [
+        `Downsize Underutilized ${resourceType} Instance`,
+        `${resourceType} Right-Sizing Opportunity`,
+        `Reduce ${resourceType} Instance Capacity`
+      ],
+      scheduling: [
+        `Enable Scheduled Shutdown for ${resourceType}`,
+        `Implement Auto-Scaling Schedule for ${resourceType}`,
+        `Add Off-Hours Scheduling to ${resourceType}`
+      ],
+      'storage-tiering': [
+        `Move ${resourceType} Data to Cold Storage`,
+        `Implement Storage Tiering for ${resourceType}`,
+        `Archive Unused ${resourceType} Data`
+      ]
+    };
+    
+    const options = titles[type] || [`Optimize ${resourceType} Configuration`];
+    return options[Math.floor(Math.random() * options.length)];
+  }
+  
+  private generateRecommendationDescription(type: string, cpuUtil: number, memUtil: number, savings: number): string {
+    if (type === 'rightsizing') {
+      return `Resource running at ${cpuUtil.toFixed(1)}% CPU and ${memUtil.toFixed(1)}% memory utilization. Recommend downsizing to reduce costs by approximately $${savings}/month.`;
+    } else if (type === 'scheduling') {
+      return `Resource usage patterns suggest potential for scheduled shutdown during off-peak hours. Estimated savings: $${savings}/month.`;
+    } else {
+      return `Storage analysis indicates underutilized capacity. Implement tiering to cold storage for $${savings}/month savings.`;
+    }
+  }
+  
+  private generateRecommendedConfig(type: string, resource: any): any {
+    const current = resource.currentConfig || {};
+    
+    if (type === 'rightsizing') {
+      return {
+        ...current,
+        instanceSize: 'reduced',
+        recommendation: 'Downsize by 1-2 tiers'
+      };
+    } else if (type === 'scheduling') {
+      return {
+        ...current,
+        schedule: 'Mon-Fri 8AM-6PM',
+        autoShutdown: true
+      };
+    } else {
+      return {
+        ...current,
+        storageClass: 'GLACIER',
+        tieringEnabled: true
+      };
+    }
+  }
+  
+  // Execute synthetic optimization (simulation only - no real AWS changes)
+  private async executeSyntheticOptimization(recommendation: any) {
+    try {
+      // Record the optimization in history
+      await storage.createOptimizationHistory({
+        recommendationId: recommendation.id,
+        executedBy: 'heuristic-autopilot',
+        executionDate: new Date(),
+        beforeConfig: recommendation.currentConfig,
+        afterConfig: recommendation.recommendedConfig,
+        actualSavings: recommendation.projectedMonthlySavings,
+        status: 'success'
+      });
+    } catch (error) {
+      // Record failed optimization
+      await storage.createOptimizationHistory({
+        recommendationId: recommendation.id,
+        executedBy: 'heuristic-autopilot',
+        executionDate: new Date(),
+        beforeConfig: recommendation.currentConfig,
+        afterConfig: recommendation.recommendedConfig,
+        status: 'failed',
+        errorMessage: error instanceof Error ? error.message : String(error)
+      });
+      
+      throw error;
     }
   }
 
