@@ -72,6 +72,48 @@ Preferred communication style: Simple, everyday language.
 - **Cost Trend Analysis**: Historical cost data processing and visualization
 - **Resource Utilization Tracking**: Performance metrics collection and analysis
 
+## Dashboard Structure (Updated October 2025)
+
+### Executive Dashboard (/executive)
+Displays comprehensive financial overview with 5 key metric cards:
+- **Monthly AWS Spend**: Current month total with +/- change indicator vs last month
+- **YTD AWS Spend**: Year-to-date total with +/- change indicator vs prior-year YTD
+- **Identified Savings Awaiting Approval**: Dollar amount with filtered recommendation count (pending/approved only)
+- **Realized Savings YTD**: Total savings achieved year-to-date
+- **Waste % Optimized YTD**: Percentage of waste eliminated
+
+**Technical Details**:
+- Uses `/api/metrics/summary` endpoint with 10-second auto-refresh
+- All recommendation counts filtered to pending/approved status only
+- Change indicators: red (increase) / green (decrease)
+- Null/undefined guards prevent crashes on missing data
+- Dark theme with cyan accent (#0BCAD9)
+
+### Operations Dashboard (/)
+Main operational dashboard with integrated metrics inside Data Flow Pipeline:
+
+**Data Flow Pipeline Container**:
+- Visual flow diagram: Input Sources → AI Processing → Output Results
+- Integrated metrics in footer with two sections:
+  1. **Financial Metrics** (primary):
+     - Monthly AWS Spend (+/- change)
+     - YTD AWS Spend (+/- change)
+     - Identified Savings Awaiting Approval (with recommendation count)
+  2. **Pipeline Operations Stats** (secondary, separated by border):
+     - Resources Monitored
+     - Processing Speed (Real-time)
+     - Active Outputs
+
+**Design Changes**:
+- Removed standalone MetricsCards component
+- All metrics now live inside Data Flow Pipeline container
+- Maintains both financial KPIs and operational telemetry
+- 10-second auto-refresh for all metrics
+
+**Data Source**:
+- Primary endpoint: `/api/metrics/summary` (replaces `/api/dashboard/metrics`)
+- Returns all 7 metrics including YTD calculations and change percentages
+
 ## Performance Optimizations
 
 The system is optimized for maximum speed when running in AI mode with synthetic data:
