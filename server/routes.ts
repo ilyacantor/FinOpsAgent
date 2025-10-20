@@ -72,6 +72,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Optimization mix endpoint (Autonomous vs HITL distribution)
+  app.get("/api/metrics/optimization-mix", async (req, res) => {
+    try {
+      const mix = await storage.getOptimizationMix();
+      res.json(mix);
+    } catch (error) {
+      console.error("Error fetching optimization mix:", error);
+      res.status(500).json({ error: "Failed to fetch optimization mix" });
+    }
+  });
+
   // Prod Mode toggle with auto-revert
   app.post("/api/mode/prod", async (req, res) => {
     try {

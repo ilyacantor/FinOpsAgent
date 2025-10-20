@@ -73,6 +73,15 @@ export interface IStorage {
     monthlySpendChange: number;
     ytdSpendChange: number;
   }>;
+
+  // Optimization mix (Autonomous vs HITL distribution)
+  getOptimizationMix(): Promise<{
+    autonomousCount: number;
+    hitlCount: number;
+    autonomousPercentage: number;
+    hitlPercentage: number;
+    totalRecommendations: number;
+  }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -534,6 +543,50 @@ export class DatabaseStorage implements IStorage {
       wastePercentOptimizedYTD: Math.round(wastePercentOptimizedYTD * 10) / 10,
       monthlySpendChange: Math.round(monthlySpendChange * 10) / 10,
       ytdSpendChange: Math.round(ytdSpendChange * 10) / 10
+    };
+  }
+
+  async getOptimizationMix(): Promise<{
+    autonomousCount: number;
+    hitlCount: number;
+    autonomousPercentage: number;
+    hitlPercentage: number;
+    totalRecommendations: number;
+  }> {
+    // Get count of autonomous recommendations
+    const [autonomousResult] = await db
+      .select({
+        count: sql<number>`COUNT(*)`
+      })
+      .from(recommendations)
+      .where(eq(recommendations.executionMode, 'autonomous'));
+
+    // Get count of HITL recommendations
+    const [hitlResult] = await db
+      .select({
+        count: sql<number>`COUNT(*)`
+      })
+      .from(recommendations)
+      .where(eq(recommendations.executionMode, 'hitl'));
+
+    const autonomousCount = Number(autonomousResult.count);
+    const hitlCount = Number(hitlResult.count);
+    const totalRecommendations = autonomousCount + hitlCount;
+
+    const autonomousPercentage = totalRecommendations > 0 
+      ? (autonomousCount / totalRecommendations) * 100 
+      : 0;
+    
+    const hitlPercentage = totalRecommendations > 0 
+      ? (hitlCount / totalRecommendations) * 100 
+      : 0;
+
+    return {
+      autonomousCount,
+      hitlCount,
+      autonomousPercentage: Math.round(autonomousPercentage),
+      hitlPercentage: Math.round(hitlPercentage),
+      totalRecommendations
     };
   }
 }
