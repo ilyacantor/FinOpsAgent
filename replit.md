@@ -135,15 +135,31 @@ The system is optimized for maximum speed when running in AI mode with synthetic
 - **What Stays Stable**: Resource counts, monthly costs, and aggregate metrics remain stable
 - **Batch Operations**: Multiple resource updates processed together for better performance
 
-### Heuristic Recommendation Engine (Added October 2025)
+### Heuristic Recommendation Engine (Updated October 2025)
 - **Automated Generation**: Runs every 3 simulation cycles (~15 seconds) to identify cost-saving opportunities
 - **Waste Detection**: Analyzes resources for underutilization (CPU < 30%, Memory < 40%)
 - **Recommendation Types**: Rightsizing, scheduling (off-hours shutdown), storage-tiering
-- **Risk Levels**: Low (60%), Medium (28%), High (12%) with corresponding savings estimates ($25-$300/month)
-- **Auto-Optimization**: Low-risk recommendations auto-execute immediately; medium/high-risk await approval
+- **Risk Distribution**: 80% low-risk (autonomous) / 10% medium-risk (HITL) / 10% high-risk (HITL)
+- **Execution Modes**:
+  - **Autonomous (80%)**: Low-risk recommendations auto-execute immediately without approval
+  - **HITL (20%)**: Medium/high-risk recommendations require human approval before execution
 - **Integration with Prod Mode**: Pauses when RAG is active, resumes after auto-revert
-- **Telemetry Logs**: Shows "💡 New Recommendations Generated", "💰 Total Potential Savings", "✅ Auto-Optimizations Applied"
+- **Telemetry Logs**: Shows "Cycle X → N new recommendations (X Autonomous, Y HITL)"
 - **Metrics Impact**: Identified Savings (pending+approved), Realized Savings YTD (auto-executed), Waste % Optimized
+
+### HITL vs Autonomous Labeling System (Added October 2025)
+- **executionMode Field**: All recommendations tagged as "autonomous" or "hitl" in database schema
+- **Visual Badges**: 
+  - Green "✅ Auto-Optimized" badge for autonomous recommendations (already executed)
+  - Amber "🕒 Awaiting Approval" badge for HITL recommendations (pending approval)
+- **Optimization Mix Widget**: Real-time dashboard widget showing 80/20 execution split
+  - Bar chart visualization with autonomous (green) and HITL (amber) sections
+  - Legend with counts for both categories
+  - Summary text: "X auto-executed / Y awaiting approval"
+  - Auto-refreshes every 10 seconds
+  - Displayed on both Executive Dashboard and Operations Dashboard
+- **API Endpoint**: `/api/metrics/optimization-mix` returns autonomousCount, hitlCount, and percentages
+- **Approval Workflow**: HITL recommendations can be approved/rejected via existing controls in Recommendations Panel
 
 ### Database Optimizations
 - **Vector-Based RAG**: Pinecone handles historical context retrieval via semantic search (no database queries for RAG)
