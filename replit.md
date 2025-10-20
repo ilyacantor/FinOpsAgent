@@ -114,7 +114,7 @@ Main operational dashboard with integrated metrics inside Data Flow Pipeline:
 - Primary endpoint: `/api/metrics/summary` (replaces `/api/dashboard/metrics`)
 - Returns all 7 metrics including YTD calculations and change percentages
 - Auto-refresh: 3-second intervals across all dashboards for real-time visibility
-- Display: K-scale formatting ($260 K, $1,235 K) via formatCurrencyK utility (no decimals)
+- Display: Hybrid formatting via formatCurrencyK utility - whole dollars for < $1K (e.g., "$71"), K-scale for >= $1K (e.g., "$260 K", "$1,235 K"), no decimals
 
 ## Performance Optimizations
 
@@ -137,11 +137,9 @@ The system is optimized for maximum speed when running in AI mode with synthetic
 - **What Stays Stable**: Resource counts remain stable; monthly costs scaled 10× for enterprise realism
 - **Batch Operations**: Multiple resource updates processed together for better performance
 - **10× Monetary Multiplier**: All cost values multiplied by 10 at source ($1.2K-$216K monthly costs)
-- **K-Scale Currency Formatting**: All monetary values display in thousands (K-scale) with no decimals
-  - formatCurrencyK is the primary formatter across entire application
-  - Format: "$X K" or "$X,XXX K" (space before K, comma separators for large numbers)
-  - Examples: $1,234.56 → $1 K, $260,000 → $260 K, $1,234,567 → $1,235 K
-  - Small values (<$1,000) round to $0 K or $1 K per specification
+- **Hybrid Currency Formatting**: Smart formatting based on value magnitude, no decimals
+  - Values < $1,000: Display as whole dollars (e.g., "$71", "$250", "$999")
+  - Values >= $1,000: Display as K-scale (e.g., "$1 K", "$260 K", "$1,235 K")
   - Applied universally: dashboards, charts, tooltips, recommendations, modals
 
 ### Heuristic Recommendation Engine (Updated October 2025)
@@ -172,14 +170,14 @@ The system is optimized for maximum speed when running in AI mode with synthetic
 - **Approval Workflow**: HITL recommendations can be approved/rejected via existing controls in Recommendations Panel
 
 ### Currency Formatting System (Added October 2025)
-- **Global K-Scale Normalization**: All monetary values throughout the application use thousand-scale formatting
+- **Hybrid Formatting**: All monetary values use smart formatting based on magnitude
 - **formatCurrencyK Utility**: Single shared formatter in `client/src/lib/currency.ts`
   - Input: Numeric value (stored as integer × 1000)
-  - Processing: Divides by 1000 to get dollars, then divides by 1000 again for K-scale
-  - Rounding: Math.round() to nearest integer thousand
-  - Output: "$X K" or "$X,XXX K" format with comma separators
+  - Processing: Divides by 1000 to get dollar amount
+  - If < $1,000: Displays as whole dollars "$X" (e.g., "$71", "$250", "$999")
+  - If >= $1,000: Displays as K-scale "$X K" or "$X,XXX K" (e.g., "$1 K", "$260 K", "$1,235 K")
+  - Rounding: Math.round() to nearest whole dollar or thousand
 - **No Decimals Policy**: All currency displays show whole numbers only
-- **Small Value Handling**: Values <$1,000 display as "$0 K" or "$1 K" after rounding
 - **Backward Compatibility**: formatCurrencyCompact aliased to formatCurrencyK for seamless transition
 - **Coverage**: Applied to all dashboards, charts, tooltips, recommendations, modals, and notifications
 
