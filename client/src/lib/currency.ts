@@ -19,21 +19,24 @@ export function formatCurrencyWithSuffix(value: number | string | null | undefin
   return `${formatted}${suffix}`;
 }
 
-// Global currency formatter - displays all values in thousands (K-scale) with no decimals
-// This is the primary formatter for all monetary values throughout the application
+// Global currency formatter - displays values in whole dollars (if < $1,000) or K-scale (if >= $1,000)
+// No decimals in either case. This is the primary formatter for all monetary values.
 export function formatCurrencyK(value: number | string | null | undefined): string {
   if (value === null || value === undefined) {
-    return '$0 K';
+    return '$0';
   }
   
   // Convert to number and divide by 1000 to get original dollar amount
   const numValue = typeof value === 'string' ? parseInt(value) : value;
   const dollarAmount = numValue / 1000;
   
-  // Convert to thousands and round to nearest integer
-  const thousands = Math.round(dollarAmount / 1000);
+  // If less than $1,000, show as whole dollars
+  if (dollarAmount < 1000) {
+    return `$${Math.round(dollarAmount).toLocaleString()}`;
+  }
   
-  // Format with thousands separators
+  // Otherwise, convert to thousands and show K-scale
+  const thousands = Math.round(dollarAmount / 1000);
   return `$${thousands.toLocaleString()} K`;
 }
 
