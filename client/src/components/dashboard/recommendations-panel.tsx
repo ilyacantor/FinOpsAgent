@@ -166,6 +166,15 @@ export function RecommendationsPanel() {
                     <Badge variant={getPriorityColor(recommendation.priority) as any}>
                       {recommendation.priority.toUpperCase()}
                     </Badge>
+                    {recommendation.executionMode === 'autonomous' ? (
+                      <Badge variant="default" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30" data-testid={`badge-autonomous-${index}`}>
+                        ✅ Auto-Optimized
+                      </Badge>
+                    ) : (
+                      <Badge variant="default" className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30" data-testid={`badge-hitl-${index}`}>
+                        🕒 Awaiting Approval
+                      </Badge>
+                    )}
                   </div>
                   <Badge variant="outline" data-testid={`savings-badge-${index}`}>
                     {formatCurrencyWithSuffix(recommendation.projectedAnnualSavings, '/year')}

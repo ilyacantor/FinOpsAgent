@@ -7,6 +7,7 @@ import { ActivityFeed } from "@/components/dashboard/activity-feed";
 import { ResourceMonitor } from "@/components/dashboard/resource-monitor";
 import { ApprovalModal } from "@/components/modals/approval-modal";
 import { DataFlowVisualization } from "@/components/data-flow-viz";
+import { OptimizationMix } from "@/components/dashboard/optimization-mix";
 // Temporarily disable WebSocket due to React hook error
 // import { useWebSocket } from "@/hooks/use-websocket";
 // import { useEffect } from "react";
@@ -58,6 +59,11 @@ export default function Dashboard() {
         <div className="p-6 h-full overflow-y-auto">
           {/* Data Flow Visualization with integrated metrics */}
           <DataFlowVisualization />
+          
+          {/* Optimization Mix */}
+          <div className="mt-8">
+            <OptimizationMix />
+          </div>
           
           {/* Recommendations Section - Responsive Layout */}
           <div className="mt-8">

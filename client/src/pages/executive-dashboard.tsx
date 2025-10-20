@@ -5,6 +5,7 @@ import { TopNav } from "@/components/layout/top-nav";
 import { useAgentConfig } from "@/hooks/use-agent-config";
 import { AiModeIndicator } from "@/components/ai-mode-indicator";
 import { AiModeHistory } from "@/components/ai-mode-history";
+import { OptimizationMix } from "@/components/dashboard/optimization-mix";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -198,6 +199,9 @@ export default function ExecutiveDashboard() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Optimization Mix */}
+          <OptimizationMix />
 
           {/* AWS Spend Breakdown */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
