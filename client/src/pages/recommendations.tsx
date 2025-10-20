@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import type { Recommendation } from "@shared/schema";
 import { AlertCircle, CheckCircle, Info, Lightbulb } from "lucide-react";
-import { formatCurrencyWithSuffix } from "@/lib/currency";
+import { formatCurrencyK } from "@/lib/currency";
 
 export default function Recommendations() {
   const { agentConfig, updateProdMode, updateSimulationMode } = useAgentConfig();
@@ -123,7 +123,7 @@ export default function Recommendations() {
                       </div>
                       <p className="text-sm text-muted-foreground">{rec.description}</p>
                       <p className="text-sm font-medium mt-1">
-                        Projected savings: {formatCurrencyWithSuffix(rec.projectedMonthlySavings, '/month')}
+                        Projected savings: {formatCurrencyK(rec.projectedMonthlySavings)}/month
                       </p>
                     </div>
                     <Badge variant="outline">{rec.status}</Badge>
