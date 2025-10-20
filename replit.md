@@ -113,6 +113,8 @@ Main operational dashboard with integrated metrics inside Data Flow Pipeline:
 **Data Source**:
 - Primary endpoint: `/api/metrics/summary` (replaces `/api/dashboard/metrics`)
 - Returns all 7 metrics including YTD calculations and change percentages
+- Auto-refresh: 3-second intervals across all dashboards for real-time visibility
+- Display: Compact formatting ($1.3M, $260K) via formatCurrencyCompact utility
 
 ## Performance Optimizations
 
@@ -128,15 +130,17 @@ The system is optimized for maximum speed when running in AI mode with synthetic
 - **Automatic Vector Storage**: All recommendations and optimization history automatically stored in Pinecone
 
 ### Continuous Simulation (Updated October 2025)
-- **Real-time Evolution**: Data evolution runs every 5 seconds (previously 30 minutes) for visible, continuous simulation
+- **High-Velocity Demo Mode**: Data evolution runs every 3 seconds (accelerated from 5s) for maximum visibility
 - **Utilization Changes**: Each cycle randomly adjusts CPU/memory utilization by ±1-7% for realistic variance
 - **Guard Protection**: `isSimulationRunning` flag prevents overlapping executions and race conditions
 - **What Changes**: Resource utilization percentages (CPU, memory) evolve continuously
-- **What Stays Stable**: Resource counts, monthly costs, and aggregate metrics remain stable
+- **What Stays Stable**: Resource counts remain stable; monthly costs scaled 10× for enterprise realism
 - **Batch Operations**: Multiple resource updates processed together for better performance
+- **10× Monetary Multiplier**: All cost values multiplied by 10 at source ($1.2K-$216K monthly costs)
+- **Compact Display**: formatCurrencyCompact utility shows values as $1.3M, $260K, $500 for clean UX
 
 ### Heuristic Recommendation Engine (Updated October 2025)
-- **Automated Generation**: Runs every 3 simulation cycles (~15 seconds) to identify cost-saving opportunities
+- **Automated Generation**: Runs every cycle (3 seconds) generating 2-5 recommendations per cycle
 - **Waste Detection**: Analyzes resources for underutilization (CPU < 30%, Memory < 40%)
 - **Recommendation Types**: Rightsizing, scheduling (off-hours shutdown), storage-tiering
 - **Risk Distribution**: 80% low-risk (autonomous) / 10% medium-risk (HITL) / 10% high-risk (HITL)
@@ -144,8 +148,9 @@ The system is optimized for maximum speed when running in AI mode with synthetic
   - **Autonomous (80%)**: Low-risk recommendations auto-execute immediately without approval
   - **HITL (20%)**: Medium/high-risk recommendations require human approval before execution
 - **Integration with Prod Mode**: Pauses when RAG is active, resumes after auto-revert
-- **Telemetry Logs**: Shows "Cycle X → N new recommendations (X Autonomous, Y HITL)"
+- **Telemetry Logs**: Enhanced with emojis showing "⚡💰💡✅🕒🧠 Cycle X → N new (X Auto / Y HITL)"
 - **Metrics Impact**: Identified Savings (pending+approved), Realized Savings YTD (auto-executed), Waste % Optimized
+- **Savings Range**: $250-$3000/month per recommendation (10× multiplier applied)
 
 ### HITL vs Autonomous Labeling System (Added October 2025)
 - **executionMode Field**: All recommendations tagged as "autonomous" or "hitl" in database schema
