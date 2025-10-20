@@ -162,13 +162,19 @@ export class SyntheticDataGenerator {
       cyclePeriod: 1 // Daily cycle
     });
 
-    // Store all resources
+    // Store all resources (create new or update existing)
     for (const resource of syntheticResources) {
       try {
         await storage.createAwsResource(resource);
       } catch (error) {
-        // Resource might already exist, update it instead
+        // Resource already exists, update it with new 10× multiplied costs
         console.log(`Updating existing resource: ${resource.resourceId}`);
+        await storage.updateAwsResource(resource.resourceId, {
+          monthlyCost: resource.monthlyCost,
+          utilizationMetrics: resource.utilizationMetrics,
+          currentConfig: resource.currentConfig,
+          lastAnalyzed: new Date()
+        });
       }
     }
 

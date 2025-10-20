@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, decimal, integer, boolean, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, decimal, integer, bigint, boolean, jsonb } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -19,7 +19,7 @@ export const awsResources = pgTable("aws_resources", {
   region: text("region").notNull(),
   currentConfig: jsonb("current_config").notNull(),
   utilizationMetrics: jsonb("utilization_metrics"),
-  monthlyCost: integer("monthly_cost"), // Multiplied by 1000, no pennies
+  monthlyCost: bigint("monthly_cost", { mode: "number" }), // Multiplied by 1000, supports 10× enterprise scale
   lastAnalyzed: timestamp("last_analyzed").defaultNow().notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -29,7 +29,7 @@ export const costReports = pgTable("cost_reports", {
   reportDate: timestamp("report_date").notNull(),
   serviceCategory: text("service_category").notNull(),
   resourceId: text("resource_id"),
-  cost: integer("cost").notNull(), // Multiplied by 1000, no pennies
+  cost: bigint("cost", { mode: "number" }).notNull(), // Multiplied by 1000, supports 10× enterprise scale
   usage: decimal("usage", { precision: 12, scale: 6 }),
   usageType: text("usage_type"),
   region: text("region"),
@@ -45,8 +45,8 @@ export const recommendations = pgTable("recommendations", {
   description: text("description").notNull(),
   currentConfig: jsonb("current_config").notNull(),
   recommendedConfig: jsonb("recommended_config").notNull(),
-  projectedMonthlySavings: integer("projected_monthly_savings").notNull(), // Multiplied by 1000, no pennies
-  projectedAnnualSavings: integer("projected_annual_savings").notNull(), // Multiplied by 1000, no pennies
+  projectedMonthlySavings: bigint("projected_monthly_savings", { mode: "number" }).notNull(), // Multiplied by 1000, supports 10× scale
+  projectedAnnualSavings: bigint("projected_annual_savings", { mode: "number" }).notNull(), // Multiplied by 1000, supports 10× scale
   riskLevel: integer("risk_level").notNull(), // percentage value 1-100
   executionMode: text("execution_mode").notNull().default("autonomous"), // autonomous, hitl
   status: text("status").notNull().default("pending"), // pending, approved, rejected, executed
@@ -61,7 +61,7 @@ export const optimizationHistory = pgTable("optimization_history", {
   executionDate: timestamp("execution_date").notNull(),
   beforeConfig: jsonb("before_config").notNull(),
   afterConfig: jsonb("after_config").notNull(),
-  actualSavings: integer("actual_savings"), // Multiplied by 1000, no pennies
+  actualSavings: bigint("actual_savings", { mode: "number" }), // Multiplied by 1000, supports 10× scale
   status: text("status").notNull(), // success, failed, in-progress
   errorMessage: text("error_message"),
   slackMessageId: text("slack_message_id"),
@@ -94,12 +94,12 @@ export const systemConfig = pgTable("system_config", {
 export const historicalCostSnapshots = pgTable("historical_cost_snapshots", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   snapshotDate: timestamp("snapshot_date").notNull(),
-  totalMonthlyCost: integer("total_monthly_cost").notNull(),
-  computeCost: integer("compute_cost").notNull(),
-  storageCost: integer("storage_cost").notNull(),
-  databaseCost: integer("database_cost").notNull(),
-  networkCost: integer("network_cost").notNull(),
-  otherCost: integer("other_cost").notNull(),
+  totalMonthlyCost: bigint("total_monthly_cost", { mode: "number" }).notNull(),
+  computeCost: bigint("compute_cost", { mode: "number" }).notNull(),
+  storageCost: bigint("storage_cost", { mode: "number" }).notNull(),
+  databaseCost: bigint("database_cost", { mode: "number" }).notNull(),
+  networkCost: bigint("network_cost", { mode: "number" }).notNull(),
+  otherCost: bigint("other_cost", { mode: "number" }).notNull(),
   resourceCount: integer("resource_count").notNull(),
   avgUtilization: decimal("avg_utilization", { precision: 5, scale: 2 }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -112,7 +112,7 @@ export const aiModeHistory = pgTable("ai_mode_history", {
   status: text("status").notNull(), // running, success, failed
   summary: text("summary"),
   recommendationsGenerated: integer("recommendations_generated").default(0),
-  totalSavingsIdentified: integer("total_savings_identified").default(0), // Multiplied by 1000, no pennies
+  totalSavingsIdentified: bigint("total_savings_identified", { mode: "number" }).default(0), // Multiplied by 1000, supports 10× scale
   triggeredBy: text("triggered_by").default("user"), // user, system
   errorMessage: text("error_message"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
