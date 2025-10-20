@@ -136,7 +136,7 @@ The system is optimized for maximum speed when running in AI mode with synthetic
 - **What Changes**: Resource utilization percentages (CPU, memory) evolve continuously
 - **What Stays Stable**: Resource counts remain stable; monthly costs scaled 10× for enterprise realism
 - **Batch Operations**: Multiple resource updates processed together for better performance
-- **10× Monetary Multiplier**: All cost values multiplied by 10 at source ($1.2K-$216K monthly costs)
+- **10× Monetary Multiplier**: All cost values multiplied by 10 at source ($12K-$2,160K monthly costs)
 - **Hybrid Currency Formatting**: Smart formatting based on value magnitude, no decimals
   - Values < $1,000: Display as whole dollars (e.g., "$71", "$250", "$999")
   - Values >= $1,000: Display as K-scale (e.g., "$1 K", "$260 K", "$1,235 K")
@@ -153,7 +153,7 @@ The system is optimized for maximum speed when running in AI mode with synthetic
 - **Integration with Prod Mode**: Pauses when RAG is active, resumes after auto-revert
 - **Telemetry Logs**: Enhanced with emojis showing "⚡💰💡✅🕒🧠 Cycle X → N new (X Auto / Y HITL)"
 - **Metrics Impact**: Identified Savings (pending+approved), Realized Savings YTD (auto-executed), Waste % Optimized
-- **Savings Range**: $250-$3000/month per recommendation (10× multiplier applied)
+- **Savings Range**: $2,500-$30,000/month per recommendation (base $250-$3K × 10)
 
 ### HITL vs Autonomous Labeling System (Added October 2025)
 - **executionMode Field**: All recommendations tagged as "autonomous" or "hitl" in database schema
