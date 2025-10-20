@@ -3,6 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Sidebar } from "@/components/layout/sidebar";
 import { TopNav } from "@/components/layout/top-nav";
 import { useAgentConfig } from "@/hooks/use-agent-config";
+import { AiModeIndicator } from "@/components/ai-mode-indicator";
+import { AiModeHistory } from "@/components/ai-mode-history";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -31,10 +33,10 @@ export default function ExecutiveDashboard() {
   const { data: recommendations = [] } = useQuery<any[]>({ queryKey: ["/api/recommendations"] });
   const { data: optimizationHistory = [] } = useQuery<any[]>({ queryKey: ["/api/optimization-history"] });
   
-  // Use the new metrics summary endpoint
+  // Use the new metrics summary endpoint with 5s refresh for real-time feel
   const { data: metricsSummary } = useQuery<any>({ 
     queryKey: ["/api/metrics/summary"],
-    refetchInterval: 10000 
+    refetchInterval: 5000 
   });
 
   // Calculate metrics
