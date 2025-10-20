@@ -32,7 +32,7 @@ export class SyntheticDataGenerator {
           diskUtilization: 45,
           queryCount: 15000
         },
-        monthlyCost: 96000000, // $96,000 (×10 scaling)
+        monthlyCost: 960000000, // $960,000 (BASE $96k × 10)
         lastAnalyzed: new Date()
       },
       {
@@ -49,7 +49,7 @@ export class SyntheticDataGenerator {
           diskUtilization: 30,
           queryCount: 2000
         },
-        monthlyCost: 7200000, // $7,200 (×10 scaling)
+        monthlyCost: 72000000, // $72,000 (BASE $7.2k × 10)
         lastAnalyzed: new Date()
       },
       {
@@ -66,7 +66,7 @@ export class SyntheticDataGenerator {
           diskUtilization: 65,
           queryCount: 48000
         },
-        monthlyCost: 216000000, // $216,000 (×10 scaling)
+        monthlyCost: 2160000000, // $2,160,000 (BASE $216k × 10)
         lastAnalyzed: new Date()
       },
       // EC2 instances
@@ -83,7 +83,7 @@ export class SyntheticDataGenerator {
           networkIn: 1024000,
           networkOut: 512000
         },
-        monthlyCost: 1210000, // $1,210 (×10 scaling)
+        monthlyCost: 12100000, // $12,100 (BASE $1.21k × 10)
         lastAnalyzed: new Date()
       },
       {
@@ -99,7 +99,7 @@ export class SyntheticDataGenerator {
           networkIn: 512000,
           networkOut: 256000
         },
-        monthlyCost: 2800000, // $2,800 (×10 scaling)
+        monthlyCost: 28000000, // $28,000 (BASE $2.8k × 10)
         lastAnalyzed: new Date()
       },
       // RDS instances
@@ -118,7 +118,7 @@ export class SyntheticDataGenerator {
           readIOPS: 8500,
           writeIOPS: 3200
         },
-        monthlyCost: 8760000, // $8,760 (×10 scaling)
+        monthlyCost: 87600000, // $87,600 (BASE $8.76k × 10)
         lastAnalyzed: new Date()
       }
     ];

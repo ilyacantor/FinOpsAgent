@@ -502,7 +502,9 @@ export class SchedulerService {
         const riskLevel = riskRandom < 0.80 ? 'low' : (riskRandom < 0.90 ? 'medium' : 'high');
         const executionMode = riskLevel === 'low' ? 'autonomous' : 'hitl';
         
-        const monthlySavings = Math.floor(Math.random() * 2750) + 250; // $250-$3000 (×10 scaling)
+        // Generate base savings ($250-$3000), apply 10× multiplier, then convert to storage format (×1000)
+        const baseSavings = Math.floor(Math.random() * 2750) + 250;
+        const monthlySavings = baseSavings * 10 * 1000; // BASE × 10 × 1000
         const annualSavings = monthlySavings * 12;
         
         const metrics = resource.utilizationMetrics as any;
@@ -515,7 +517,7 @@ export class SchedulerService {
           type: recType,
           priority: riskLevel === 'high' ? 'critical' : (riskLevel === 'medium' ? 'high' : 'medium'),
           title: this.generateRecommendationTitle(recType, resource.resourceType),
-          description: this.generateRecommendationDescription(recType, cpuUtil, memUtil, monthlySavings),
+          description: this.generateRecommendationDescription(recType, cpuUtil, memUtil, baseSavings),
           currentConfig: resource.currentConfig as any,
           recommendedConfig: this.generateRecommendedConfig(recType, resource),
           projectedMonthlySavings: monthlySavings,
@@ -586,13 +588,14 @@ export class SchedulerService {
     return options[Math.floor(Math.random() * options.length)];
   }
   
-  private generateRecommendationDescription(type: string, cpuUtil: number, memUtil: number, savings: number): string {
+  private generateRecommendationDescription(type: string, cpuUtil: number, memUtil: number, baseSavings: number): string {
+    // baseSavings is the raw dollar amount before 10× multiplier, used for narrative text
     if (type === 'rightsizing') {
-      return `Resource running at ${cpuUtil.toFixed(1)}% CPU and ${memUtil.toFixed(1)}% memory utilization. Recommend downsizing to reduce costs by approximately $${savings}/month.`;
+      return `Resource running at ${cpuUtil.toFixed(1)}% CPU and ${memUtil.toFixed(1)}% memory utilization. Recommend downsizing to reduce costs by approximately $${baseSavings}/month.`;
     } else if (type === 'scheduling') {
-      return `Resource usage patterns suggest potential for scheduled shutdown during off-peak hours. Estimated savings: $${savings}/month.`;
+      return `Resource usage patterns suggest potential for scheduled shutdown during off-peak hours. Estimated savings: $${baseSavings}/month.`;
     } else {
-      return `Storage analysis indicates underutilized capacity. Implement tiering to cold storage for $${savings}/month savings.`;
+      return `Storage analysis indicates underutilized capacity. Implement tiering to cold storage for $${baseSavings}/month savings.`;
     }
   }
   
