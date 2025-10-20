@@ -1,7 +1,6 @@
 import { Sidebar } from "@/components/layout/sidebar";
 import { TopNav } from "@/components/layout/top-nav";
 import { useAgentConfig } from "@/hooks/use-agent-config";
-import { MetricsCards } from "@/components/dashboard/metrics-cards";
 import { RecommendationsPanel } from "@/components/dashboard/recommendations-panel";
 import { ActivityFeed } from "@/components/dashboard/activity-feed";
 import { ResourceMonitor } from "@/components/dashboard/resource-monitor";
@@ -55,12 +54,8 @@ export default function Dashboard() {
         <main className="flex-1 overflow-hidden">
         
         <div className="p-6 h-full overflow-y-auto">
-          <MetricsCards />
-          
-          {/* Data Flow Visualization */}
-          <div className="mt-8">
-            <DataFlowVisualization />
-          </div>
+          {/* Data Flow Visualization with integrated metrics */}
+          <DataFlowVisualization />
           
           {/* Recommendations Section - Responsive Layout */}
           <div className="mt-8">

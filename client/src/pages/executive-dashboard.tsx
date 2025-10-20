@@ -26,22 +26,25 @@ export default function ExecutiveDashboard() {
   const [selectedRegion, setSelectedRegion] = useState<string>("all");
   const [optimizationAdoption, setOptimizationAdoption] = useState([60]);
 
-  const { agentConfig, updateProdMode, updateSimulationMode } = useAgentConfig();
+  const { agentConfig, updateProdMode } = useAgentConfig();
   const { data: resources = [] } = useQuery<any[]>({ queryKey: ["/api/aws-resources"] });
   const { data: recommendations = [] } = useQuery<any[]>({ queryKey: ["/api/recommendations"] });
   const { data: optimizationHistory = [] } = useQuery<any[]>({ queryKey: ["/api/optimization-history"] });
-  const { data: metrics } = useQuery<any>({ queryKey: ["/api/dashboard/metrics"] });
+  
+  // Use the new metrics summary endpoint
+  const { data: metricsSummary } = useQuery<any>({ 
+    queryKey: ["/api/metrics/summary"],
+    refetchInterval: 10000 
+  });
 
   // Calculate metrics
-  const monthlySpend = metrics?.monthlySpend || 0;
-  const identifiedSavings = metrics?.identifiedSavings || 0;
-  const realizedSavings = optimizationHistory
-    .filter((h: any) => h.status === 'success')
-    .reduce((sum: number, h: any) => sum + (h.actualSavings || 0), 0);
-
-  const wastePercent = monthlySpend > 0 
-    ? ((identifiedSavings / monthlySpend) * 100).toFixed(1) 
-    : "0";
+  const monthlySpend = metricsSummary?.monthlySpend || 0;
+  const ytdSpend = metricsSummary?.ytdSpend || 0;
+  const identifiedSavings = metricsSummary?.identifiedSavingsAwaitingApproval || 0;
+  const realizedSavings = metricsSummary?.realizedSavingsYTD || 0;
+  const wastePercent = metricsSummary?.wastePercentOptimizedYTD || 0;
+  const monthlySpendChange = metricsSummary?.monthlySpendChange || 0;
+  const ytdSpendChange = metricsSummary?.ytdSpendChange || 0;
 
   const roi = monthlySpend > 0 
     ? ((realizedSavings / monthlySpend) * 100).toFixed(2) 
@@ -95,9 +98,7 @@ export default function ExecutiveDashboard() {
       <TopNav 
         lastSync="2 min ago"
         prodMode={agentConfig?.prodMode || false}
-        syntheticData={agentConfig?.simulationMode || false}
         onProdModeChange={updateProdMode}
-        onSyntheticDataChange={updateSimulationMode}
       />
       <div className="flex-1 flex pt-[60px]">
         <Sidebar />
@@ -121,7 +122,7 @@ export default function ExecutiveDashboard() {
         {/* OVERVIEW TAB */}
         <TabsContent value="overview" className="space-y-6">
           {/* Executive Summary - Financial Overview */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <Card className="bg-[#1B1E23] border-[#0BCAD9]/20" data-testid="card-monthly-spend">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-gray-400">Monthly AWS Spend</CardTitle>
@@ -129,8 +130,24 @@ export default function ExecutiveDashboard() {
               <CardContent>
                 <div className="flex flex-col justify-center">
                   <div className="text-3xl font-bold text-[#0BCAD9]">{formatCurrency(monthlySpend)}</div>
-                  <div className="text-sm text-green-500 mt-1">
-                    2.3% vs last month
+                  <div className={`text-sm mt-1 flex items-center gap-1 ${monthlySpendChange > 0 ? 'text-red-500' : 'text-green-500'}`}>
+                    {monthlySpendChange > 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
+                    {Math.abs(monthlySpendChange).toFixed(1)}% vs last month
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-[#1B1E23] border-[#0BCAD9]/20" data-testid="card-ytd-spend">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-gray-400">YTD AWS Spend</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col justify-center">
+                  <div className="text-3xl font-bold text-[#0BCAD9]">{formatCurrency(ytdSpend)}</div>
+                  <div className={`text-sm mt-1 flex items-center gap-1 ${ytdSpendChange > 0 ? 'text-red-500' : 'text-green-500'}`}>
+                    {ytdSpendChange > 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
+                    {Math.abs(ytdSpendChange).toFixed(1)}% vs prior-year YTD
                   </div>
                 </div>
               </CardContent>
@@ -138,13 +155,13 @@ export default function ExecutiveDashboard() {
 
             <Card className="bg-[#1B1E23] border-[#0BCAD9]/20" data-testid="card-identified-savings">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-gray-400">Identified Savings (Annual)</CardTitle>
+                <CardTitle className="text-sm font-medium text-gray-400">Identified Savings Awaiting Approval</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-col justify-center">
-                  <div className="text-3xl font-bold text-green-500">{formatCurrency(identifiedSavings * 12)}</div>
+                  <div className="text-3xl font-bold text-green-500">{formatCurrency(identifiedSavings)}</div>
                   <div className="text-sm text-[#0BCAD9] mt-1">
-                    {recommendations.length} opportunities
+                    {recommendations.filter((r: any) => r.status === 'pending' || r.status === 'approved').length} recommendations
                   </div>
                 </div>
               </CardContent>
@@ -166,13 +183,13 @@ export default function ExecutiveDashboard() {
 
             <Card className="bg-[#1B1E23] border-[#0BCAD9]/20" data-testid="card-waste-percentage">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-gray-400">Waste % (Inefficient Spend)</CardTitle>
+                <CardTitle className="text-sm font-medium text-gray-400">Waste % Optimized YTD</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-col justify-center">
-                  <div className="text-3xl font-bold text-orange-500">{wastePercent}%</div>
+                  <div className="text-3xl font-bold text-orange-500">{(wastePercent || 0).toFixed(1)}%</div>
                   <div className="text-sm text-gray-400 mt-1">
-                    Can be optimized
+                    YTD Performance
                   </div>
                 </div>
               </CardContent>

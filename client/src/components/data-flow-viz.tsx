@@ -1,8 +1,18 @@
 import { Card } from "@/components/ui/card";
-import { Database, Server, Cloud, Activity, TrendingDown, CheckCircle2, DollarSign, Zap } from "lucide-react";
+import { Database, Server, Cloud, Activity, TrendingDown, TrendingUp, CheckCircle2, DollarSign, Zap } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { formatCurrency } from "@/lib/currency";
 import type { AwsResource, Recommendation, OptimizationHistory } from "@shared/schema";
+
+interface MetricsSummary {
+  monthlySpend: number;
+  ytdSpend: number;
+  identifiedSavingsAwaitingApproval: number;
+  realizedSavingsYTD: number;
+  wastePercentOptimizedYTD: number;
+  monthlySpendChange: number;
+  ytdSpendChange: number;
+}
 
 export function DataFlowVisualization() {
   const { data: resources = [] } = useQuery<AwsResource[]>({ 
@@ -17,13 +27,9 @@ export function DataFlowVisualization() {
     queryKey: ['/api/optimization-history']
   });
 
-  const { data: metrics } = useQuery<{
-    monthlySpend: number;
-    identifiedSavings: number;
-    executedSavings: number;
-    activeResources: number;
-  }>({ 
-    queryKey: ['/api/dashboard/metrics']
+  const { data: metrics } = useQuery<MetricsSummary>({ 
+    queryKey: ['/api/metrics/summary'],
+    refetchInterval: 10000 // Auto-refresh every 10 seconds
   });
 
   const ec2Count = resources.filter(r => r.resourceType === 'EC2').length;
@@ -149,7 +155,7 @@ export function DataFlowVisualization() {
                 <DollarSign className="w-5 h-5 text-chart-3" />
                 <div className="flex-1">
                   <div className="text-sm font-medium text-foreground">Identified Savings</div>
-                  <div className="text-xs text-chart-3">{formatCurrency(metrics?.identifiedSavings || 0)}/month</div>
+                  <div className="text-xs text-chart-3">{formatCurrency(metrics?.identifiedSavingsAwaitingApproval || 0)}/month</div>
                 </div>
               </div>
             </div>
@@ -211,19 +217,59 @@ export function DataFlowVisualization() {
         </svg>
       </div>
 
-      {/* Stats Footer */}
-      <div className="mt-6 pt-4 border-t border-border">
-        <div className="grid grid-cols-3 gap-4 text-center">
-          <div data-testid="stat-input-count">
-            <div className="text-2xl font-bold text-primary">{totalResources}</div>
+      {/* Key Metrics Footer */}
+      <div className="mt-6 pt-4 border-t border-border space-y-6">
+        {/* Financial Metrics */}
+        <div className="grid grid-cols-3 gap-6">
+          <div data-testid="metric-monthly-spend" className="text-center">
+            <div className="text-sm font-medium text-muted-foreground mb-1">Monthly AWS Spend</div>
+            <div className="text-2xl font-bold text-primary" data-testid="monthly-spend-value">
+              {formatCurrency(metrics?.monthlySpend || 0)}
+            </div>
+            {metrics && metrics.monthlySpendChange !== 0 && (
+              <div className={`text-xs mt-1 flex items-center justify-center gap-1 ${metrics.monthlySpendChange > 0 ? 'text-destructive' : 'text-green-500'}`}>
+                {metrics.monthlySpendChange > 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                {Math.abs(metrics.monthlySpendChange).toFixed(1)}% vs last month
+              </div>
+            )}
+          </div>
+          
+          <div data-testid="metric-ytd-spend" className="text-center">
+            <div className="text-sm font-medium text-muted-foreground mb-1">YTD AWS Spend</div>
+            <div className="text-2xl font-bold text-primary" data-testid="ytd-spend-value">
+              {formatCurrency(metrics?.ytdSpend || 0)}
+            </div>
+            {metrics && metrics.ytdSpendChange !== 0 && (
+              <div className={`text-xs mt-1 flex items-center justify-center gap-1 ${metrics.ytdSpendChange > 0 ? 'text-destructive' : 'text-green-500'}`}>
+                {metrics.ytdSpendChange > 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                {Math.abs(metrics.ytdSpendChange).toFixed(1)}% vs prior-year YTD
+              </div>
+            )}
+          </div>
+          
+          <div data-testid="metric-identified-savings" className="text-center">
+            <div className="text-sm font-medium text-muted-foreground mb-1">Identified Savings Awaiting Approval</div>
+            <div className="text-2xl font-bold text-accent" data-testid="identified-savings-value">
+              {formatCurrency(metrics?.identifiedSavingsAwaitingApproval || 0)}
+            </div>
+            <div className="text-xs text-muted-foreground mt-1">
+              {activeRecommendations} recommendations
+            </div>
+          </div>
+        </div>
+        
+        {/* Pipeline Operations Stats */}
+        <div className="grid grid-cols-3 gap-4 pt-4 border-t border-border">
+          <div data-testid="stat-input-count" className="text-center">
+            <div className="text-lg font-bold text-chart-1">{totalResources}</div>
             <div className="text-xs text-muted-foreground">Resources Monitored</div>
           </div>
-          <div data-testid="stat-processing-rate">
-            <div className="text-2xl font-bold text-accent">Real-time</div>
+          <div data-testid="stat-processing-rate" className="text-center">
+            <div className="text-lg font-bold text-chart-2">Real-time</div>
             <div className="text-xs text-muted-foreground">Processing Speed</div>
           </div>
-          <div data-testid="stat-output-count">
-            <div className="text-2xl font-bold text-chart-3">{totalOutputs}</div>
+          <div data-testid="stat-output-count" className="text-center">
+            <div className="text-lg font-bold text-chart-3">{totalOutputs}</div>
             <div className="text-xs text-muted-foreground">Active Outputs</div>
           </div>
         </div>
