@@ -41,18 +41,50 @@ export interface TaskStatusResponse {
 }
 
 /**
+ * Map platform view names to local API endpoints
+ */
+const VIEW_TO_LOCAL_ENDPOINT: Record<string, string> = {
+  'accounts': '/api/aws-resources',
+  'resources': '/api/aws-resources',
+  'opportunities': '/api/recommendations',
+  'recommendations': '/api/recommendations',
+  'history': '/api/optimization-history',
+  'optimization-history': '/api/optimization-history',
+  'metrics': '/api/metrics/summary',
+  'summary': '/api/metrics/summary',
+};
+
+/**
  * Fetch data from a platform view
- * Falls back to local mocks if USE_PLATFORM=false
+ * Falls back to local API endpoints if USE_PLATFORM=false
  */
 export async function getView<T = any>(viewName: string): Promise<PlatformViewResponse<T>> {
   if (!USE_PLATFORM) {
-    // Fallback to existing local data sources
-    console.log(`[aosClient] USE_PLATFORM=false, falling back to local data for view: ${viewName}`);
-    return {
-      data: [] as T,
-      trace_id: `local-${Date.now()}`,
-      timestamp: new Date().toISOString()
-    };
+    // Fallback to existing local API endpoints
+    const localEndpoint = VIEW_TO_LOCAL_ENDPOINT[viewName] || `/api/${viewName}`;
+    console.log(`[aosClient] USE_PLATFORM=false, falling back to local endpoint: ${localEndpoint}`);
+    
+    try {
+      const res = await fetch(localEndpoint, {
+        method: 'GET',
+        credentials: 'include',
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Local API fetch failed (${res.status}): ${errorText}`);
+      }
+
+      const data = await res.json();
+      return {
+        data,
+        trace_id: `local-${Date.now()}`,
+        timestamp: new Date().toISOString()
+      };
+    } catch (error) {
+      console.error(`[aosClient] Local fallback error for ${viewName}:`, error);
+      throw error;
+    }
   }
 
   const res = await fetch(`${PLATFORM_BASE_URL}/api/views/${viewName}`, {
