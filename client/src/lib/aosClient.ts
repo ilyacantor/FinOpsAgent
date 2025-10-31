@@ -3,8 +3,15 @@
  * Handles Views (read) and Intents (actions) with HITL-safe execution modes
  */
 
-const PLATFORM_BASE_URL = import.meta.env.VITE_PLATFORM_URL || 'https://autonomos-platform.replit.app';
+// Configuration (line 6-7)
+const PLATFORM_BASE_URL = import.meta.env.VITE_AOS_BASE_URL || import.meta.env.VITE_PLATFORM_URL || 'https://autonomos-platform.replit.app';
 const USE_PLATFORM = import.meta.env.VITE_USE_PLATFORM === 'true';
+
+// Export configuration for testing
+export const AOS_CONFIG = {
+  baseUrl: PLATFORM_BASE_URL,
+  usePlatform: USE_PLATFORM,
+};
 
 export interface PlatformViewResponse<T = any> {
   data: T;
