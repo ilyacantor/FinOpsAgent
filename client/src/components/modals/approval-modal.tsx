@@ -82,16 +82,26 @@ export function ApprovalModal() {
 
           setPlatformIntentResponse(intentResponse);
 
-          // Start polling task status
-          pollTaskStatus(intentResponse.task_id, {
-            intervalMs: 1000,
-            timeoutMs: 30000,
-            onProgress: (status) => {
-              setTaskStatus(status);
-            }
-          }).catch((error) => {
-            console.error('Task polling error:', error);
-          });
+          // Check if platform is in degraded mode
+          if (intentResponse.status === 'failed' && intentResponse.result?.degraded) {
+            // Show degraded-mode notification
+            toast({
+              title: "Platform Unavailable",
+              description: "Approval saved locally. Platform integration is currently unavailable - optimization will sync when platform is back online.",
+              variant: "default",
+            });
+          } else {
+            // Start polling task status only if platform is working
+            pollTaskStatus(intentResponse.task_id, {
+              intervalMs: 1000,
+              timeoutMs: 30000,
+              onProgress: (status) => {
+                setTaskStatus(status);
+              }
+            }).catch((error) => {
+              console.error('Task polling error:', error);
+            });
+          }
 
         } catch (error) {
           console.error('Platform intent error:', error);
@@ -101,12 +111,15 @@ export function ApprovalModal() {
       }
     },
     onSuccess: async (_, variables) => {
-      toast({
-        title: variables.status === 'approved' ? "Optimization Approved" : "Optimization Rejected",
-        description: variables.status === 'approved' 
-          ? "The optimization will be executed during the next maintenance window."
-          : "The optimization request has been rejected.",
-      });
+      // Show approval success message (only if platform is not showing degraded toast)
+      if (!platformIntentResponse || platformIntentResponse.status !== 'failed') {
+        toast({
+          title: variables.status === 'approved' ? "Optimization Approved" : "Optimization Rejected",
+          description: variables.status === 'approved' 
+            ? "The optimization will be executed during the next maintenance window."
+            : "The optimization request has been rejected.",
+        });
+      }
       
       // Force refresh recommendation data and activity feed
       await queryClient.invalidateQueries({ queryKey: ['/api/recommendations'] });

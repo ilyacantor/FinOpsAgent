@@ -94,20 +94,61 @@ export async function getView<T = any>(viewName: string): Promise<PlatformViewRe
     }
   }
 
-  const res = await fetch(`${PLATFORM_BASE_URL}/api/views/${viewName}`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    credentials: 'include',
-  });
+  // Try platform first, fall back to local on error
+  try {
+    const res = await fetch(`${PLATFORM_BASE_URL}/api/v1/dcl/views/${viewName}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    });
 
-  if (!res.ok) {
-    const errorText = await res.text();
-    throw new Error(`Platform view fetch failed (${res.status}): ${errorText}`);
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.warn(`[aosClient] Platform view fetch failed (${res.status}), falling back to local`, errorText);
+      
+      // Graceful fallback to local API
+      const localEndpoint = VIEW_TO_LOCAL_ENDPOINT[viewName] || `/api/${viewName}`;
+      const localRes = await fetch(localEndpoint, {
+        method: 'GET',
+        credentials: 'include',
+      });
+      
+      if (!localRes.ok) {
+        throw new Error(`Both platform and local API failed for view ${viewName}`);
+      }
+      
+      const data = await localRes.json();
+      return {
+        data,
+        trace_id: `fallback-${Date.now()}`,
+        timestamp: new Date().toISOString()
+      };
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error(`[aosClient] Platform error, falling back to local for ${viewName}:`, error);
+    
+    // Final fallback to local API
+    const localEndpoint = VIEW_TO_LOCAL_ENDPOINT[viewName] || `/api/${viewName}`;
+    const localRes = await fetch(localEndpoint, {
+      method: 'GET',
+      credentials: 'include',
+    });
+    
+    if (!localRes.ok) {
+      throw new Error(`Both platform and local API failed for view ${viewName}`);
+    }
+    
+    const data = await localRes.json();
+    return {
+      data,
+      trace_id: `error-fallback-${Date.now()}`,
+      timestamp: new Date().toISOString()
+    };
   }
-
-  return await res.json();
 }
 
 /**
@@ -146,19 +187,52 @@ export async function postIntent(
     headers['Idempotency-Key'] = options.idempotencyKey;
   }
 
-  const res = await fetch(`${PLATFORM_BASE_URL}/api/agents/${agentId}/intents/${action}`, {
-    method: 'POST',
-    headers,
-    credentials: 'include',
-    body: JSON.stringify(params),
-  });
+  // Try platform first, fall back to mock on error
+  try {
+    const res = await fetch(`${PLATFORM_BASE_URL}/api/v1/intents/${agentId}/${action}`, {
+      method: 'POST',
+      headers,
+      credentials: 'include',
+      body: JSON.stringify(params),
+    });
 
-  if (!res.ok) {
-    const errorText = await res.text();
-    throw new Error(`Platform intent failed (${res.status}): ${errorText}`);
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.warn(`[aosClient] Platform intent failed (${res.status}), falling back to degraded mode`, errorText);
+      
+      // Graceful fallback with failed status to indicate degraded mode
+      return {
+        task_id: `fallback-task-${Date.now()}`,
+        trace_id: `fallback-trace-${Date.now()}`,
+        status: 'failed',
+        message: `Platform unavailable (${res.status}), operation not executed - using degraded mode`,
+        result: { 
+          success: false, 
+          mode: 'fallback',
+          reason: `platform_unavailable_${res.status}`,
+          degraded: true
+        }
+      };
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error(`[aosClient] Platform error, falling back to degraded mode for ${agentId}/${action}:`, error);
+    
+    // Final fallback with failed status to indicate degraded mode
+    return {
+      task_id: `error-fallback-task-${Date.now()}`,
+      trace_id: `error-fallback-trace-${Date.now()}`,
+      status: 'failed',
+      message: `Platform error, operation not executed: ${error instanceof Error ? error.message : String(error)}`,
+      result: { 
+        success: false, 
+        mode: 'error-fallback',
+        error: error instanceof Error ? error.message : String(error),
+        degraded: true
+      }
+    };
   }
-
-  return await res.json();
 }
 
 /**
