@@ -9,10 +9,15 @@ import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
 import { apiRequest } from "@/lib/queryClient";
 import type { Recommendation } from "@shared/schema";
+import { postIntent, pollTaskStatus, mapHITLToIntentParams, type TaskStatusResponse, type PlatformIntentResponse } from "@/lib/aosClient";
+import { TaskStatusBadge } from "@/components/TaskStatusBadge";
+import { TraceIdFooter } from "@/components/TraceIdFooter";
 
 export function ApprovalModal() {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedRecommendationId, setSelectedRecommendationId] = useState<string | null>(null);
+  const [platformIntentResponse, setPlatformIntentResponse] = useState<PlatformIntentResponse | null>(null);
+  const [taskStatus, setTaskStatus] = useState<TaskStatusResponse | null>(null);
   const { toast } = useToast();
 
   // Listen for modal open events
@@ -37,16 +42,63 @@ export function ApprovalModal() {
     mutationFn: async ({ status, comments }: { status: string; comments?: string }) => {
       if (!selectedRecommendationId) throw new Error("No recommendation selected");
       
-      // Create approval request
+      // Create approval request in local system (always)
       await apiRequest('POST', '/api/approval-requests', {
         recommendationId: selectedRecommendationId,
-        requestedBy: 'current-user', // In a real app, this would be the current user ID
+        requestedBy: 'current-user',
         approverRole: 'Head of Cloud Platform',
         status,
         comments,
         approvedBy: status === 'approved' ? 'current-user' : undefined,
         approvalDate: status === 'approved' ? new Date() : undefined
       });
+
+      // If approved and recommendation exists, send intent to platform
+      if (status === 'approved' && recommendation) {
+        try {
+          // Determine HITL mode from executionMode (HITL = true, autonomous = false)
+          const isHITL = recommendation.executionMode === 'hitl';
+          const intentParams = mapHITLToIntentParams(isHITL);
+
+          // Post intent to platform with idempotency key
+          const intentResponse = await postIntent(
+            'finops',
+            'execute',
+            {
+              intent: 'optimize-resource',
+              targets: [recommendation.resourceId],
+              ...intentParams,
+              metadata: {
+                recommendationId: selectedRecommendationId,
+                title: recommendation.title,
+                type: recommendation.type,
+                projectedSavings: recommendation.projectedMonthlySavings,
+              }
+            },
+            {
+              idempotencyKey: `finops-approval-${selectedRecommendationId}`,
+            }
+          );
+
+          setPlatformIntentResponse(intentResponse);
+
+          // Start polling task status
+          pollTaskStatus(intentResponse.task_id, {
+            intervalMs: 1000,
+            timeoutMs: 30000,
+            onProgress: (status) => {
+              setTaskStatus(status);
+            }
+          }).catch((error) => {
+            console.error('Task polling error:', error);
+          });
+
+        } catch (error) {
+          console.error('Platform intent error:', error);
+          // Don't fail the approval if platform intent fails
+          // The local approval is already complete
+        }
+      }
     },
     onSuccess: async (_, variables) => {
       toast({
@@ -195,10 +247,25 @@ export function ApprovalModal() {
             </div>
           </div>
 
+          {/* Platform Task Status */}
+          {taskStatus && (
+            <div className="flex items-center justify-between border-t pt-4">
+              <div className="text-sm text-muted-foreground">
+                Platform Execution Status:
+              </div>
+              <TaskStatusBadge status={taskStatus} />
+            </div>
+          )}
+
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2 text-sm text-muted-foreground">
               <User className="w-4 h-4" />
               <span>Requires Head of Cloud Platform approval</span>
+              {taskStatus && (
+                <span className="ml-4 text-xs font-mono text-cyan-400">
+                  task_id: {platformIntentResponse?.task_id}
+                </span>
+              )}
             </div>
             <div className="flex space-x-3">
               <Button 
@@ -220,6 +287,7 @@ export function ApprovalModal() {
           </div>
         </div>
       </DialogContent>
+      <TraceIdFooter traceId={platformIntentResponse?.trace_id} />
     </Dialog>
   );
 }
