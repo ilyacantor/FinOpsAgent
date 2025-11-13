@@ -1,0 +1,63 @@
+services:
+  # Main FinOps Agent Web Service
+  - type: web
+    name: finops-agent
+    runtime: node
+    region: oregon  # Change to your preferred region: oregon, frankfurt, singapore, ohio
+    plan: starter  # Options: starter, standard, pro, pro plus, pro max, pro ultra
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      # Database
+      - key: DATABASE_URL
+        fromDatabase:
+          name: finops-db
+          property: connectionString
+      # AWS Configuration (sync from Render dashboard)
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      - key: AWS_REGION
+        value: us-east-1
+      # AI & ML Services
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: PINECONE_API_KEY
+        sync: false
+      # Slack Integration (optional)
+      - key: SLACK_BOT_TOKEN
+        sync: false
+      - key: SLACK_CHANNEL_ID
+        sync: false
+    healthCheckPath: /api/dashboard/metrics
+    autoDeploy: true
+
+  # PostgreSQL Database
+  - type: pserv
+    name: finops-db
+    runtime: postgresql
+    region: oregon  # Should match your web service region
+    plan: starter  # Options: starter, standard, pro
+    ipAllowList: []  # Empty = allow all (or add specific IPs)
+    databaseName: finops
+    databaseUser: finops_user
+
+# Optional: Background Worker (if you separate scheduler)
+#  - type: worker
+#    name: finops-worker
+#    runtime: node
+#    region: oregon
+#    plan: starter
+#    buildCommand: npm install
+#    startCommand: node server/services/scheduler.js
+#    envVars:
+#      # Same environment variables as web service
+#      - key: DATABASE_URL
+#        fromDatabase:
+#          name: finops-db
+#          property: connectionString
