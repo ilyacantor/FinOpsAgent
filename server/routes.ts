@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
@@ -7,6 +7,15 @@ import { sendOptimizationComplete } from "./services/slack";
 import { insertRecommendationSchema, insertApprovalRequestSchema } from "@shared/schema";
 // Import scheduler service to ensure it's instantiated and configuration is initialized
 import { schedulerService } from "./services/scheduler.js";
+// Import validation middleware
+import {
+  validateCreateRecommendation,
+  validateCreateApprovalRequest,
+  validateUpdateApprovalRequest,
+  validateBooleanToggle,
+  validateRecommendationsQuery,
+  validateIdParam,
+} from "./middleware/validation";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
@@ -84,14 +93,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Prod Mode toggle with auto-revert
-  app.post("/api/mode/prod", async (req, res) => {
+  app.post("/api/mode/prod", validateBooleanToggle, async (req: Request, res: Response) => {
     try {
       const { enabled } = req.body;
       const { configService } = await import('./services/config.js');
-
-      if (typeof enabled !== 'boolean') {
-        return res.status(400).json({ error: "Enabled must be a boolean value" });
-      }
 
       // Clear existing timeout if any
       if (prodModeTimeout) {
@@ -132,7 +137,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Recommendations endpoints
-  app.get("/api/recommendations", async (req, res) => {
+  app.get("/api/recommendations", validateRecommendationsQuery, async (req: Request, res: Response) => {
     try {
       const status = req.query.status as string | undefined;
       const recommendations = await storage.getRecommendations(status);
@@ -143,7 +148,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/recommendations/:id", async (req, res) => {
+  app.get("/api/recommendations/:id", validateIdParam, async (req: Request, res: Response) => {
     try {
       const recommendation = await storage.getRecommendation(req.params.id);
       if (!recommendation) {
@@ -156,7 +161,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/recommendations", async (req, res) => {
+  app.post("/api/recommendations", validateCreateRecommendation, async (req: Request, res: Response) => {
     try {
       const validatedData = insertRecommendationSchema.parse(req.body);
       const recommendation = await storage.createRecommendation(validatedData);
@@ -175,7 +180,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Approval request endpoints
-  app.post("/api/approval-requests", async (req, res) => {
+  app.post("/api/approval-requests", validateCreateApprovalRequest, async (req: Request, res: Response) => {
     try {
       console.log("Creating approval request with data:", req.body);
       const validatedData = insertApprovalRequestSchema.parse(req.body);
@@ -225,9 +230,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/approval-requests/:id", async (req, res) => {
+  app.patch("/api/approval-requests/:id", validateUpdateApprovalRequest, async (req: Request, res: Response) => {
     try {
-      const { status, approvedBy, comments } = req.body;
+      const { status, reviewedBy: approvedBy, reviewNotes: comments } = req.body;
       const updateData: any = {
         status,
         approvedBy,
